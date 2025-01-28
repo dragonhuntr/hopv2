@@ -1,3 +1,5 @@
+// src/types/auth.ts
+
 import { type DefaultSession } from "next-auth";
 
 /**
@@ -23,4 +25,11 @@ export interface AuthUser {
   email: string | null;
   name: string | null;
   password?: string;
-} 
+}
+
+export type Credentials = {
+  email: string;
+  password: string;
+  name?: string;
+  isRegistering?: string;
+};

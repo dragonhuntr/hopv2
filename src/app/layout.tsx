@@ -2,6 +2,9 @@ import "./globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
+import { Toaster } from "sonner";
+import { NextAuthProvider } from "@/components/providers/next-auth-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -13,8 +16,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${GeistSans.variable} antialiased`}>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <ThemeProvider>
+          <NextAuthProvider>
+            {children}
+            <Toaster />
+          </NextAuthProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
