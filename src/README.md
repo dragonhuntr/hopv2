@@ -23,10 +23,15 @@ src/
 │   ├── api/              # API-related utilities
 │   └── utils/            # General utilities
 ├── types/                # TypeScript type definitions
-└── server/               # Server-side code
-    ├── auth/             # Auth-related server code
-    ├── api/              # API-related server code
-    └── db/               # Database operations
+├── server/               # Server-side code
+│   ├── auth/             # Auth-related server code
+│   ├── api/              # API-related server code
+│   └── db/               # Database operations
+├── prisma/               # Prisma schema and queries
+│   └── migrations/       # Prisma migrations
+└── public/               # Public assets
+    └── favicon.ico       # Favicon
+
 ```
 
 ## Directory Purposes
