@@ -4,12 +4,8 @@ import { db } from '@/server/db/schema';
 export async function GET(request: Request) {
     const session = await auth();
 
-    if (!session?.user) {
-        return new Response('Unauthorized', { status: 401 });
-    }
-
     const chats = await db.chat.findMany({
-        where: { userId: session.user.id },
+        where: { userId: session!.user.id },
         orderBy: { createdAt: 'desc' },
         include: {
             messages: {
@@ -26,13 +22,9 @@ export async function GET(request: Request) {
 export async function DELETE(request: Request) {
     const session = await auth();
 
-    if (!session?.user) {
-        return new Response('Unauthorized', { status: 401 });
-    }
-
     try {
         await db.chat.deleteMany({
-            where: { userId: session.user.id }
+            where: { userId: session!.user.id }
         });
         return new Response('All chats deleted', { status: 200 });
     } catch (error) {

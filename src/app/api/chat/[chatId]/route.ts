@@ -7,14 +7,10 @@ export async function GET(
 ) {
     const session = await auth();
 
-    if (!session?.user) {
-        return new Response('Unauthorized', { status: 401 });
-    }
-
     const chat = await db.chat.findUnique({
         where: { 
             id: params.chatId,
-            userId: session.user.id
+            userId: session!.user.id
         },
         include: {
             messages: {
@@ -38,15 +34,11 @@ export async function DELETE(
 ) {
     const session = await auth();
 
-    if (!session?.user) {
-        return new Response('Unauthorized', { status: 401 });
-    }
-
     try {
         const chat = await db.chat.findUnique({
             where: { 
                 id: params.chatId,
-                userId: session.user.id
+                userId: session!.user.id
             }
         });
 

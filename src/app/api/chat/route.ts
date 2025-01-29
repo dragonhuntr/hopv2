@@ -25,10 +25,6 @@ export async function POST(request: Request) {
 
     const session = await auth();
 
-    if (!session?.user) {
-        return new Response('Unauthorized', { status: 401 });
-    }
-
     const model = models.find((model) => model.id === modelId);
 
     if (!model) {
@@ -46,7 +42,7 @@ export async function POST(request: Request) {
     const chatId = uuidv4();
     const chat = await db.chat.findFirst({
         where: {
-            userId: session.user.id,
+            userId: session!.user.id,
             messages: {
                 some: {
                     content: userMessage.content as string
@@ -63,7 +59,7 @@ export async function POST(request: Request) {
         await db.chat.create({
             data: {
                 id: chatId,
-                userId: session.user.id,
+                userId: session!.user.id,
                 title,
                 createdAt: new Date(),
             }
@@ -112,7 +108,7 @@ export async function POST(request: Request) {
                 messages: coreMessages,
             });
 
-            if (session.user?.id) {
+            if (session!.user?.id) {
                 try {
                     await db.message.create({
                         data: {
@@ -138,14 +134,10 @@ export async function DELETE(request: Request) {
 
     const session = await auth();
 
-    if (!session?.user) {
-        return new Response('Unauthorized', { status: 401 });
-    }
-
     try {
         if (deleteAll === 'true') {
             await db.chat.deleteMany({
-                where: { userId: session.user.id }
+                where: { userId: session!.user.id }
             });
             return new Response('All chats deleted', { status: 200 });
         }
@@ -158,7 +150,7 @@ export async function DELETE(request: Request) {
             where: { id }
         });
 
-        if (!chat || chat.userId !== session.user.id) {
+        if (!chat || chat.userId !== session!.user.id) {
             return new Response('Unauthorized', { status: 401 });
         }
 

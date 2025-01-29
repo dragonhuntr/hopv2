@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import {
   Card,
@@ -10,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { auth } from "@/server/auth";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
@@ -18,14 +16,7 @@ export const metadata: Metadata = {
   description: "Sign in to your account",
 };
 
-export default async function AuthenticationPage() {
-  const session = await auth();
-  
-  // Redirect to chat if already authenticated
-  if (session?.user) {
-    redirect("/chat");
-  }
-
+export default function AuthenticationPage() {
   return (
     <div className="container relative min-h-screen grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
