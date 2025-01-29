@@ -1,27 +1,16 @@
-import { auth } from "@/server/auth";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import NextAuth from 'next-auth';
 
-// Paths that should redirect to dashboard if authenticated
-const authPaths = ["/auth", "/register"];
+import { authConfig } from '@/app/(auth)/auth.config';
 
-export default async function middleware(request: NextRequest) {
-  const session = await auth();
-  const { pathname } = request.nextUrl;
-
-  // Check if this is an auth path
-  const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
-
-  if (isAuthPath && session) {
-    // Redirect to dashboard if accessing auth routes while authenticated
-    const redirectUrl = new URL("/chat", request.url);
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  return NextResponse.next();
-}
+export default NextAuth(authConfig).auth;
 
 export const config = {
-  // Only run middleware on auth routes
-  matcher: ["/auth/:path*", "/register/:path*"],
-}; 
+  matcher: [
+    '/',
+    '/:id',
+    '/api/:path*',
+    '/login',
+    '/register',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+};

@@ -8,14 +8,16 @@ import { ChevronDown, SendHorizontal, Loader2 } from "lucide-react"
 import { models, type Model } from "@/lib/ai/models"
 import { useState } from "react"
 import { toast } from "sonner"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { generateUUID } from "@/lib/utils"
 
 export default function ChatPage() {
   const [selectedModel, setSelectedModel] = useState<Model>(models[0]!)
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
     onError: (error) => {
       toast.error(error.message)
-    }
+    },
+    id: generateUUID()
   })
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
