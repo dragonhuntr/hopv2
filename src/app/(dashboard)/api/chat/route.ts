@@ -19,7 +19,7 @@ import { customModel } from '@/lib/ai';
 import { models, DEFAULT_MODEL_ID, DEFAULT_TITLE_MODEL_ID } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import { generateUUID, getMostRecentUserMessage } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '@/app/(dashboard)/chat/actions';
+import { generateTitleFromUserMessage } from '@/app/(dashboard)/actions';
 
 export const maxDuration = 60;
 
