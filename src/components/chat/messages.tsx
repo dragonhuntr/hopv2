@@ -30,7 +30,7 @@ function PureMessages({
   return (
     <div
       ref={messagesContainerRef}
-      className="flex flex-col min-w-0 gap-3 md:gap-6 flex-1 overflow-y-auto px-0 py-4 md:py-6 scrollbar-thin scrollbar-thumb-secondary"
+      className="flex flex-col min-w-0 gap-3 md:gap-6 flex-1 px-0 py-4 md:py-6 scrollbar-thin scrollbar-thumb-secondary"
     >
       {/* {messages.length === 0 && <Overview />} */}
 

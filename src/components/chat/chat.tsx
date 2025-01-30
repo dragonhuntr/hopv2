@@ -66,27 +66,25 @@ export const Chat = memo(function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <div className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="max-w-3xl mx-auto">
-            <ChatHeader
+        <ChatHeader
+          chatId={id}
+          selectedModelId={currentModelId}
+          onModelChange={setCurrentModelId}
+          selectedVisibilityType={selectedVisibilityType}
+          isReadonly={isReadonly}
+        />
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="w-full max-w-3xl mx-auto px-4 md:px-8">
+            <DynamicMessages
               chatId={id}
-              selectedModelId={currentModelId}
-              onModelChange={setCurrentModelId}
-              selectedVisibilityType={selectedVisibilityType}
+              isLoading={isLoading}
+              messages={messages}
+              setMessages={setMessages}
+              reload={reload}
               isReadonly={isReadonly}
             />
           </div>
-        </div>
-
-        <div className="flex-1 w-full max-w-3xl mx-auto px-4 md:px-8">
-          <DynamicMessages
-            chatId={id}
-            isLoading={isLoading}
-            messages={messages}
-            setMessages={setMessages}
-            reload={reload}
-            isReadonly={isReadonly}
-          />
         </div>
 
         <div className="w-full max-w-3xl mx-auto px-4 md:px-8 pb-4 md:pb-8">
