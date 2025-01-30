@@ -46,7 +46,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-import type { Chat } from '@/lib/db/schema';
+import type { Chat } from '@/types/chat';
 import { fetcher } from '@/lib/utils';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 

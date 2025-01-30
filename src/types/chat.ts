@@ -10,4 +10,7 @@ export interface Chat {
   title: string | null;
   messages: Message[];
   createdAt: Date;
+  visibility: 'private' | 'public';
+  modelId: string;
+  userId: string;
 }

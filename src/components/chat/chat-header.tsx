@@ -8,17 +8,16 @@ import { useSWRConfig } from 'swr';
 
 import { SidebarToggle } from '@/components/chat/sidebar-toggle';
 import { Button } from '@/components/ui/button';
-import { PlusIcon } from '../ui/icons';
-import { useSidebar } from './ui/sidebar';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@components/ui/tooltip';
-import { VisibilityType } from './visibility-selector';
+import { PlusIcon } from '@/components/ui/icons';
+import { useSidebar } from '@/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { VisibilityType } from '@/components/chat/visibility-selector';
 
-// Dynamically import heavy components
-const DynamicModelSelector = dynamic(() => import('./model-selector').then(mod => mod.ModelSelector), {
+const DynamicModelSelector = dynamic(() => import('@/components/chat/model-selector').then(mod => mod.ModelSelector), {
   ssr: false
 });
 
-const DynamicVisibilitySelector = dynamic(() => import('./visibility-selector').then(mod => mod.VisibilitySelector), {
+const DynamicVisibilitySelector = dynamic(() => import('@/components/chat/visibility-selector').then(mod => mod.VisibilitySelector), {
   ssr: false
 });
 

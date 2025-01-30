@@ -184,14 +184,6 @@ export async function updateChatModelById({
 
 export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   try {
-    // Delete related records first due to foreign key constraints
-    await prisma.vote.deleteMany({
-      where: { 
-        chat: {
-          userId: userId
-        }
-      }
-    });
     await prisma.message.deleteMany({
       where: { 
         chat: {
