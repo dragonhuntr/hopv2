@@ -6,8 +6,7 @@ import { DEFAULT_MODEL_ID, models } from '@/lib/ai/models';
 import { getChatById, getMessagesByChatId } from '@/prisma/queries';
 import { convertToUIMessages } from '@/lib/utils';
 import { DataStreamHandler } from '@/components/chat/data-stream-handler';
-import { SidebarProvider, Sidebar, SidebarContent, SidebarInset } from '@/components/ui/sidebar';
-import { SidebarHistory } from '@/components/chat/sidebar-history';
+import { ChatLayout } from '@/components/chat/chat-layout';
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -34,32 +33,21 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   const isReadonly = session?.user?.id !== chat.userId;
-  
-  let selectedModelId = models.find((model) => model.id === chat.model)?.id || DEFAULT_MODEL_ID;
-  console.log(selectedModelId)
+  const selectedModelId = models.find((model) => model.id === chat.model)?.id || DEFAULT_MODEL_ID;
 
   // Get messages after auth check
   const messagesFromDb = await getMessagesByChatId({ id });
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen">
-        <Sidebar>
-          <SidebarContent>
-            <SidebarHistory user={session?.user} />
-          </SidebarContent>
-        </Sidebar>
-        <SidebarInset>
-          <Chat
-            id={chat.id}
-            initialMessages={convertToUIMessages(messagesFromDb)}
-            selectedModelId={selectedModelId}
-            selectedVisibilityType={chat.visibility}
-            isReadonly={isReadonly}
-          />
-          <DataStreamHandler id={id} />
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <ChatLayout user={session?.user}>
+      <Chat
+        id={chat.id}
+        initialMessages={convertToUIMessages(messagesFromDb)}
+        selectedModelId={selectedModelId}
+        selectedVisibilityType={chat.visibility}
+        isReadonly={isReadonly}
+      />
+      <DataStreamHandler id={id} />
+    </ChatLayout>
   );
 }

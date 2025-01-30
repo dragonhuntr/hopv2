@@ -92,56 +92,54 @@ function PureMultimodalInput({
   };
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        submitForm();
+      }}
+      className={cn(
+        "relative w-full flex flex-col gap-2 md:gap-4 bg-background rounded-lg border shadow-sm",
+        className
+      )}
+    >
       <Textarea
         ref={textareaRef}
         placeholder="Send a message..."
         value={input}
         onChange={handleInput}
-        className={cn(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
-          className
-        )}
-        rows={2}
-        autoFocus
-        onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
-
-            if (isLoading) {
-              toast.error('Please wait for the model to finish its response!');
-            } else {
-              submitForm();
-            }
+            submitForm();
           }
         }}
+        className="min-h-[60px] md:min-h-[98px] w-full resize-none bg-transparent px-3 md:px-4 py-3 md:py-[1.3rem] focus-within:outline-none text-sm md:text-base"
+        autoFocus
       />
-
-      <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
+      <div className="absolute right-2 md:right-4 bottom-2 md:bottom-4 flex items-center gap-2">
         {isLoading ? (
           <Button
-            className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-              event.preventDefault();
-              stop();
-            }}
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={stop}
           >
-            <StopIcon size={3.5} />
+            <StopIcon />
+            <span className="sr-only">Stop generating</span>
           </Button>
         ) : (
           <Button
-            className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
-            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-              event.preventDefault();
-              submitForm();
-            }}
-            disabled={input.length === 0}
+            type="submit"
+            variant="ghost"
+            size="icon"
+            disabled={input.trim().length === 0}
           >
-            <ArrowUpIcon size={3.5} />
+            <ArrowUpIcon />
+            <span className="sr-only">Send message</span>
           </Button>
         )}
       </div>
-    </div>
+    </form>
   );
 }
 

@@ -14,7 +14,6 @@ interface MessagesProps {
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
   isReadonly: boolean;
-  isBlockVisible: boolean;
 }
 
 function PureMessages({
@@ -24,7 +23,6 @@ function PureMessages({
   setMessages,
   reload,
   isReadonly,
-  isBlockVisible,
 }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -32,8 +30,7 @@ function PureMessages({
   return (
     <div
       ref={messagesContainerRef}
-      className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
-      data-block-visible={isBlockVisible}
+      className="flex flex-col min-w-0 gap-3 md:gap-6 flex-1 overflow-y-auto px-0 py-4 md:py-6 scrollbar-thin scrollbar-thumb-secondary"
     >
       {/* {messages.length === 0 && <Overview />} */}
 
@@ -62,9 +59,6 @@ function PureMessages({
 }
 
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
-  // Block visibility check - if either has changed, we should re-render
-  if (prevProps.isBlockVisible !== nextProps.isBlockVisible) return false;
-
   // Loading state changes
   if (prevProps.isLoading !== nextProps.isLoading) return false;
 

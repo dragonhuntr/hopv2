@@ -66,24 +66,30 @@ export const Chat = memo(function Chat({
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader
-          chatId={id}
-          selectedModelId={currentModelId}
-          onModelChange={setCurrentModelId}
-          selectedVisibilityType={selectedVisibilityType}
-          isReadonly={isReadonly}
-        />
+        <div className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="max-w-3xl mx-auto">
+            <ChatHeader
+              chatId={id}
+              selectedModelId={currentModelId}
+              onModelChange={setCurrentModelId}
+              selectedVisibilityType={selectedVisibilityType}
+              isReadonly={isReadonly}
+            />
+          </div>
+        </div>
 
-        <DynamicMessages
-          chatId={id}
-          isLoading={isLoading}
-          messages={messages}
-          setMessages={setMessages}
-          reload={reload}
-          isReadonly={isReadonly}
-        />
+        <div className="flex-1 w-full max-w-3xl mx-auto px-4 md:px-8">
+          <DynamicMessages
+            chatId={id}
+            isLoading={isLoading}
+            messages={messages}
+            setMessages={setMessages}
+            reload={reload}
+            isReadonly={isReadonly}
+          />
+        </div>
 
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+        <div className="w-full max-w-3xl mx-auto px-4 md:px-8 pb-4 md:pb-8">
           {!isReadonly && (
             <DynamicMultimodalInput
               input={input}
@@ -93,7 +99,7 @@ export const Chat = memo(function Chat({
               stop={stop}
             />
           )}
-        </form>
+        </div>
       </div>
     </>
   );

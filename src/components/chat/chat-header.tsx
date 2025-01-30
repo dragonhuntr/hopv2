@@ -12,6 +12,7 @@ import { PlusIcon } from '@/components/ui/icons';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { VisibilityType } from '@/components/chat/visibility-selector';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const DynamicModelSelector = dynamic(() => import('@/components/chat/model-selector').then(mod => mod.ModelSelector), {
   ssr: false
@@ -48,10 +49,10 @@ function PureChatHeader({
       <TooltipTrigger asChild>
         <Button
           variant="outline"
-          className="order-2 md:order-1 md:px-2 px-2 md:h-fit ml-auto md:ml-0"
+          className="order-2 md:order-1 px-2 md:px-2 h-8 md:h-fit ml-auto md:ml-0"
           onClick={handleNewChat}
         >
-          <PlusIcon />
+          <PlusIcon size={16} />
           <span className="md:sr-only">New Chat</span>
         </Button>
       </TooltipTrigger>
@@ -60,25 +61,32 @@ function PureChatHeader({
   ), [router]);
 
   return (
-    <header className="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2">
-      <SidebarToggle />
+    <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="max-w-3xl mx-auto px-4 py-3">
+        <div className="flex items-center justify-between gap-2 w-full">
+          <div className="flex items-center gap-2 flex-1">
+            <SidebarToggle />
+            <h1 className="text-lg font-semibold text-foreground">HopV2</h1>
+            {(!open || windowWidth < 768) && newChatButton}
+          </div>
 
-      {(!open || windowWidth < 768) && newChatButton}
-
-      <div className="flex items-center gap-2 md:ml-0 ml-auto order-1 md:order-2">
-        {!isReadonly && (
-          <>
-            <DynamicModelSelector
-              selectedModelId={selectedModelId}
-              onModelChange={onModelChange}
-              chatId={chatId}
-            />
-            <DynamicVisibilitySelector
-              selectedVisibilityType={selectedVisibilityType}
-              chatId={chatId}
-            />
-          </>
-        )}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <ThemeToggle />
+            {!isReadonly && (
+              <>
+                <DynamicModelSelector
+                  selectedModelId={selectedModelId}
+                  onModelChange={onModelChange}
+                  chatId={chatId}
+                />
+                <DynamicVisibilitySelector
+                  selectedVisibilityType={selectedVisibilityType}
+                  chatId={chatId}
+                />
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </header>
   );
