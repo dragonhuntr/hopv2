@@ -5,7 +5,8 @@ import {
   getChatById, 
   getMessageById, 
   updateChatModelById,
-  deleteMessagesByChatIdAfterTimestamp
+  deleteMessagesByChatIdAfterTimestamp,
+  updateChatVisibilityById
 } from '@/prisma/queries';
 
 export async function generateTitleFromUserMessage({
@@ -44,5 +45,20 @@ export async function generateTitleFromUserMessage({
     if (chat) {
       await updateChatModelById({ chatId, model });
       // Remove revalidation since we're handling state client-side
+    }
+  }
+
+  export async function updateChatVisibility({
+    chatId,
+    visibility,
+  }: {
+    chatId: string;
+    visibility: 'private' | 'public';
+  }) {
+    const chat = await getChatById({ id: chatId });
+    
+    // Only update if chat exists
+    if (chat) {
+      await updateChatVisibilityById({ chatId, visibility });
     }
   }
