@@ -13,21 +13,16 @@ export function useScrollToBottom<T extends HTMLElement>(): [
 
     if (container && end) {
       const observer = new MutationObserver(() => {
-        // Only auto-scroll if user is already near the bottom
-        const { scrollTop, scrollHeight, clientHeight } = container;
-        const isNearBottom = scrollHeight - (scrollTop + clientHeight) < 100;
-        
-        if (isNearBottom) {
-          end.scrollIntoView({ behavior: 'instant', block: 'end' });
-        }
+        end.scrollIntoView({ behavior: 'smooth' });
       });
 
       observer.observe(container, {
         childList: true,
         subtree: true,
-        attributes: true,
-        characterData: true,
       });
+
+      // Initial scroll
+      end.scrollIntoView();
 
       return () => observer.disconnect();
     }
