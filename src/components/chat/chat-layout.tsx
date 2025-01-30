@@ -1,6 +1,7 @@
 import { User } from 'next-auth';
-import { SidebarProvider, Sidebar, SidebarContent, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarContent, SidebarInset, SidebarFooter } from '@/components/ui/sidebar';
 import { SidebarHistory } from '@/components/chat/sidebar-history';
+import { SidebarUserNav } from '@/components/chat/sidebar-user-nav';
 import { ReactNode } from 'react';
 
 interface ChatLayoutProps {
@@ -17,6 +18,11 @@ export function ChatLayout({ children, user, defaultOpen = true }: ChatLayoutPro
           <SidebarContent>
             <SidebarHistory user={user} />
           </SidebarContent>
+          {user && (
+            <SidebarFooter>
+              <SidebarUserNav user={user} />
+            </SidebarFooter>
+          )}
         </Sidebar>
         <SidebarInset className="flex-1">
           <div className="flex h-screen w-full flex-col">

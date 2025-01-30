@@ -12,7 +12,6 @@ import { PlusIcon } from '@/components/ui/icons';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { VisibilityType } from '@/components/chat/visibility-selector';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const DynamicModelSelector = dynamic(() => import('@/components/chat/model-selector').then(mod => mod.ModelSelector), {
   ssr: false
@@ -71,7 +70,6 @@ function PureChatHeader({
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            <ThemeToggle />
             {!isReadonly && (
               <>
                 <DynamicModelSelector
