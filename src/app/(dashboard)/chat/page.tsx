@@ -1,33 +1,29 @@
 "use client"
 
-import { useChat } from "ai/react"
+import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
-import { useState } from "react"
-import { toast } from "sonner"
 import { generateUUID } from "@/lib/utils"
-import { models, type Model } from "@/lib/ai/models"
+import { DEFAULT_MODEL_ID, models } from "@/lib/ai/models"
 import { Chat } from "@/components/chat/chat"
 import { ChatLayout } from "@/components/chat/chat-layout"
+import { DataStreamHandler } from "@/components/chat/data-stream-handler"
 
 export default function ChatPage() {
-  const [selectedModel, setSelectedModel] = useState<Model>(models[0]!)
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    onError: (error) => {
-      toast.error(error.message)
-    },
-    id: generateUUID()
-  })
+  const [selectedModelId] = useState<string>(DEFAULT_MODEL_ID)
   const { data: session } = useSession()
+  const id = generateUUID()
 
   return (
     <ChatLayout user={session?.user}>
       <Chat
-        id={generateUUID()}
-        initialMessages={messages}
-        selectedModelId={selectedModel.id}
+        key={id}
+        id={id}
+        initialMessages={[]}
+        selectedModelId={selectedModelId}
         selectedVisibilityType="private"
         isReadonly={false}
       />
+      <DataStreamHandler id={id} />
     </ChatLayout>
   )
 }

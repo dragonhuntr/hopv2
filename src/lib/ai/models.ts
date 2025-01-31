@@ -1,11 +1,4 @@
-// Define your models here.
-
-export interface Model {
-    id: string;
-    label: string;
-    apiIdentifier: string;
-    description: string;
-}
+import type { Model } from '@/types/model';
 
 export const models: Array<Model> = [
     {
@@ -13,18 +6,21 @@ export const models: Array<Model> = [
         label: 'Llama 3.3',
         apiIdentifier: 'llama3.3',
         description: 'For complex, multi-step tasks',
+        vision: false,
     },
     {
         id: 'llama3.2-vision',
         label: 'Llama 3.2 Vision',
         apiIdentifier: 'llama3.2-vision',
         description: 'For complex, multi-step tasks',
+        vision: true,
     },
     {
         id: 'deepseek-r1',
         label: 'DeepSeek-R1',
         apiIdentifier: 'deepseek-r1',
         description: 'For complex, multi-step tasks',
+        vision: false,
     },
 ] as const;
 

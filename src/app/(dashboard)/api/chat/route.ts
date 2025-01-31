@@ -57,7 +57,6 @@ export async function POST(request: Request) {
         await saveChat({ id, userId: session.user.id, title, model: model.apiIdentifier });
     }
 
-    // Generate a new chat ID if this is a new conversation
     const userMessageId = generateUUID();
 
     await saveMessages({

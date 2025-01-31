@@ -32,8 +32,6 @@ function PureMessages({
       ref={messagesContainerRef}
       className="flex flex-col min-w-0 gap-3 md:gap-6 flex-1 px-0 py-4 md:py-6 scrollbar-thin scrollbar-thumb-secondary"
     >
-      {/* {messages.length === 0 && <Overview />} */}
-
       {messages.map((message, index) => (
         <PreviewMessage
           key={message.id}
