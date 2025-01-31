@@ -9,10 +9,12 @@ import {
 
 import { SidebarLeftIcon } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function SidebarToggle({
   className,
-}: ComponentProps<typeof SidebarTrigger>) {
+  inSidebar,
+}: ComponentProps<typeof SidebarTrigger> & { inSidebar?: boolean }) {
   const { toggleSidebar } = useSidebar();
 
   return (
@@ -20,13 +22,16 @@ export function SidebarToggle({
       <TooltipTrigger asChild>
         <Button
           onClick={toggleSidebar}
-          variant="outline"
-          className="md:px-2 md:h-fit"
+          variant={inSidebar ? "ghost" : "outline"}
+          className={cn(
+            "md:px-2 md:h-fit",
+            inSidebar && "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            className
+          )}
         >
           <SidebarLeftIcon size={16} />
         </Button>
       </TooltipTrigger>
-      <TooltipContent align="start">Toggle Sidebar</TooltipContent>
     </Tooltip>
   );
 }

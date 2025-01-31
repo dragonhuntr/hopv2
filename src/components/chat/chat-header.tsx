@@ -64,7 +64,7 @@ function PureChatHeader({
       <div className="max-w-3xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-2 w-full">
           <div className="flex items-center gap-2 flex-1">
-            <SidebarToggle />
+            {(!open || windowWidth < 768) && <SidebarToggle />}
             <Button
               variant="link"
               className="p-0 h-auto"
