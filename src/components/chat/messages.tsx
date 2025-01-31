@@ -65,14 +65,16 @@ export const Messages = memo(PureMessages, (prevProps, nextProps) => {
   // Message length check (quick fail)
   if (prevProps.messages.length !== nextProps.messages.length) return false;
 
-  // Only do shallow comparison of last message if lengths are same
-  // This covers most common case of new messages being added
-  const prevLastMsg = prevProps.messages[prevProps.messages.length - 1];
-  const nextLastMsg = nextProps.messages[nextProps.messages.length - 1];
-  if (prevLastMsg?.id !== nextLastMsg?.id || 
-      prevLastMsg?.content !== nextLastMsg?.content ||
-      prevLastMsg?.role !== nextLastMsg?.role) {
-    return false;
+  // Compare all messages in the array
+  for (let i = 0; i < prevProps.messages.length; i++) {
+    const prevMsg = prevProps.messages[i];
+    const nextMsg = nextProps.messages[i];
+    
+    if (prevMsg?.id !== nextMsg?.id || 
+        prevMsg?.content !== nextMsg?.content ||
+        prevMsg?.role !== nextMsg?.role) {
+      return false;
+    }
   }
 
   return true;

@@ -1,7 +1,7 @@
-import { PrismaClient, type User } from '@prisma/client';
+import { type User } from '@prisma/client';
 import { genSaltSync, hashSync } from 'bcrypt-ts';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/db/prisma';
 
 export async function getUser(email: string): Promise<User | null> {
 
@@ -70,12 +70,14 @@ export async function getChatsByUserId({ id }: { id: string }) {
       orderBy: { createdAt: 'desc' }
     });
   } catch (error) {
+    console.log(error)
     console.error('Failed to get chats by user from database');
     throw error;
   }
 }
 
 export async function getChatById({ id }: { id: string }) {
+  console.log('getChatById', id)
   try {
     return await prisma.chat.findUnique({
       where: { id }
