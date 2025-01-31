@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SidebarToggle } from '@/components/chat/sidebar-toggle';
+import { NewChat } from '@/components/chat/new-chat';
 
 import {
   Tooltip,
@@ -211,7 +212,8 @@ const Sidebar = React.forwardRef<
             side={side}
           >
             <div className="flex h-full w-full flex-col">
-              <div className="flex items-center justify-end p-2">
+              <div className="flex items-center justify-between p-2">
+                <NewChat inSidebar />
                 <SidebarToggle inSidebar />
               </div>
               {children}
@@ -256,7 +258,8 @@ const Sidebar = React.forwardRef<
           {...props}
         >
           <div className={cn('flex h-full w-full flex-col')}>
-            <div className="flex items-center justify-end p-2">
+            <div className="flex items-center justify-between p-2">
+              <NewChat inSidebar />
               <SidebarToggle inSidebar />
             </div>
             <div

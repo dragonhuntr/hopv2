@@ -7,6 +7,7 @@ import { memo, useMemo } from 'react';
 import { useSWRConfig } from 'swr';
 
 import { SidebarToggle } from '@/components/chat/sidebar-toggle';
+import { NewChat } from '@/components/chat/new-chat';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from '@/components/ui/icons';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -75,7 +76,7 @@ function PureChatHeader({
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            {newChatButton}
+            {(!open || windowWidth < 768) && <NewChat />}
             {!isReadonly && (
               <>
                 <DynamicModelSelector
