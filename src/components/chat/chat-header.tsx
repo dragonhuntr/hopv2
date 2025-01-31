@@ -48,11 +48,11 @@ function PureChatHeader({
       <TooltipTrigger asChild>
         <Button
           variant="outline"
-          className="order-2 md:order-1 px-2 md:px-2 h-8 md:h-fit ml-auto md:ml-0"
+          className="px-2 h-8"
           onClick={handleNewChat}
         >
           <PlusIcon size={16} />
-          <span className="md:sr-only">New Chat</span>
+          <span className="hidden md:inline-block ml-2">New Chat</span>
         </Button>
       </TooltipTrigger>
       <TooltipContent>New Chat</TooltipContent>
@@ -65,11 +65,17 @@ function PureChatHeader({
         <div className="flex items-center justify-between gap-2 w-full">
           <div className="flex items-center gap-2 flex-1">
             <SidebarToggle />
-            <h1 className="text-lg font-semibold text-foreground">HopV2</h1>
-            {(!open || windowWidth < 768) && newChatButton}
+            <Button
+              variant="link"
+              className="p-0 h-auto"
+              onClick={() => router.push('/chat')}
+            >
+              <h1 className="text-lg font-semibold text-foreground">HopV2</h1>
+            </Button>
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            {newChatButton}
             {!isReadonly && (
               <>
                 <DynamicModelSelector
