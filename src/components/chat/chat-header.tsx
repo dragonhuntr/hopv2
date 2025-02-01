@@ -18,10 +18,6 @@ const DynamicModelSelector = dynamic(() => import('@/components/chat/model-selec
   ssr: false
 });
 
-const DynamicVisibilitySelector = dynamic(() => import('@/components/chat/visibility-selector').then(mod => mod.VisibilitySelector), {
-  ssr: false
-});
-
 function PureChatHeader({
   chatId,
   selectedModelId,
@@ -38,27 +34,6 @@ function PureChatHeader({
   const router = useRouter();
   const { open } = useSidebar();
   const { width: windowWidth } = useWindowSize();
-  const { mutate } = useSWRConfig();
-
-  const handleNewChat = () => {
-    router.push('/');
-  };
-
-  const newChatButton = useMemo(() => (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="outline"
-          className="px-2 h-8"
-          onClick={handleNewChat}
-        >
-          <PlusIcon size={16} />
-          <span className="hidden md:inline-block ml-2">New Chat</span>
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>New Chat</TooltipContent>
-    </Tooltip>
-  ), [router]);
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -82,10 +57,6 @@ function PureChatHeader({
                 <DynamicModelSelector
                   selectedModelId={selectedModelId}
                   onModelChange={onModelChange}
-                  chatId={chatId}
-                />
-                <DynamicVisibilitySelector
-                  selectedVisibilityType={selectedVisibilityType}
                   chatId={chatId}
                 />
               </>
