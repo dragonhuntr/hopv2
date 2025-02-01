@@ -2,7 +2,6 @@ import {
     type Message,
     convertToCoreMessages,
     createDataStreamResponse,
-    streamObject,
     streamText,
 } from 'ai';
 

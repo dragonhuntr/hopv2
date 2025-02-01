@@ -1,7 +1,7 @@
-import { type User } from '@prisma/client';
+import { PrismaClient, type User } from '@prisma/client';
 import { genSaltSync, hashSync } from 'bcrypt-ts';
 
-import { prisma } from '@/lib/db/prisma';
+const prisma = new PrismaClient();
 
 export async function getUser(email: string): Promise<User | null> {
 

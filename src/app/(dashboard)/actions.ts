@@ -1,3 +1,5 @@
+'use server';
+
 import { type CoreUserMessage, generateText } from 'ai';
 import { customModel } from '@/lib/ai';
 import { titlePrompt } from '@/lib/ai/prompts';
@@ -47,7 +49,6 @@ export async function generateTitleFromUserMessage({
       // Remove revalidation since we're handling state client-side
     }
   }
-
   export async function updateChatVisibility({
     chatId,
     visibility,
