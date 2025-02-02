@@ -1,20 +1,31 @@
 'use client';
 
-import type { ChatRequestOptions } from 'ai';
-import React, { useRef, useEffect, memo } from 'react';
+import type { ChatRequestOptions, Attachment, CreateMessage, Message } from 'ai';
+import React, { useRef, useEffect, useState, useCallback, type Dispatch, type SetStateAction, memo } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 import { cn } from '@/lib/utils';
+import equal from 'fast-deep-equal';
 
-import { ArrowUpIcon, StopIcon } from '@/components/ui/icons';
+import { ArrowUpIcon, StopIcon, PaperclipIcon } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/text-area';
+import { PreviewAttachment } from './preview-attachment';
 
 interface MultimodalInputProps {
+  chatId: string;
   input: string;
   setInput: (value: string) => void;
   isLoading: boolean;
   stop: () => void;
+  attachments: Array<Attachment>;
+  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
+  messages: Array<Message>;
+  setMessages: Dispatch<SetStateAction<Array<Message>>>;
+  append: (
+    message: Message | CreateMessage,
+    chatRequestOptions?: ChatRequestOptions,
+  ) => Promise<string | null | undefined>;
   handleSubmit: (
     event?: {
       preventDefault?: () => void;
@@ -25,15 +36,24 @@ interface MultimodalInputProps {
 }
 
 function PureMultimodalInput({
+  chatId,
   input,
   setInput,
   isLoading,
   stop,
+  attachments,
+  setAttachments,
+  messages,
+  setMessages,
+  append,
   handleSubmit,
   className,
 }: MultimodalInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { width } = useWindowSize();
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -81,69 +101,186 @@ function PureMultimodalInput({
     adjustHeight();
   };
 
-  const submitForm = () => {
-    if (isLoading || input.trim().length === 0) return;
-    
-    handleSubmit();
+  const submitForm = useCallback(() => {
+    window.history.replaceState({}, '', `/chat/${chatId}`);
+
+    handleSubmit(undefined, {
+      experimental_attachments: attachments,
+    });
+
+    setAttachments([]);
     setLocalStorageInput('');
     resetHeight();
 
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
+  }, [
+    attachments,
+    handleSubmit,
+    setAttachments,
+    setLocalStorageInput,
+    width,
+    chatId,
+  ]);
+
+  const uploadFile = async (file: File): Promise<Attachment | undefined> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/files/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const { url, pathname, contentType } = data;
+
+        return {
+          url,
+          name: pathname,
+          contentType: contentType,
+        };
+      }
+      const { error } = await response.json();
+      toast.error(error);
+      return undefined;
+    } catch (error) {
+      toast.error('Failed to upload file, please try again!');
+      return undefined;
+    }
+  };
+
+  const handleFileChange = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files || []);
+      setUploadQueue(files.map((file) => file.name));
+
+      try {
+        const uploadPromises = files.map((file) => uploadFile(file));
+        const uploadedAttachments = (await Promise.all(uploadPromises)).filter(
+          (attachment): attachment is Attachment => attachment !== undefined
+        );
+        setAttachments((currentAttachments) => [...currentAttachments, ...uploadedAttachments]);
+      } catch (error) {
+        console.error('Error uploading files!', error);
+      } finally {
+        setUploadQueue([]);
+      }
+    },
+    [setAttachments],
+  );
+
+  const handleDrop = useCallback(
+    async (event: React.DragEvent<HTMLTextAreaElement>) => {
+      event.preventDefault();
+      setIsDragOver(false);
+      const files = Array.from(event.dataTransfer.files);
+      setUploadQueue(files.map((file) => file.name));
+
+      try {
+        const uploadPromises = files.map((file) => uploadFile(file));
+        const uploadedAttachments = (await Promise.all(uploadPromises)).filter(
+          (attachment): attachment is Attachment => attachment !== undefined
+        );
+        setAttachments((currentAttachments) => [...currentAttachments, ...uploadedAttachments]);
+      } catch (error) {
+        console.error('Error uploading files!', error);
+      } finally {
+        setUploadQueue([]);
+      }
+    },
+    [setAttachments],
+  );
+
+  const handleDragOver = (event: React.DragEvent<HTMLTextAreaElement>) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOver(false);
   };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        submitForm();
-      }}
-      className={cn(
-        "relative w-full flex flex-col gap-2 md:gap-4 bg-background rounded-lg border shadow-sm",
-        className
+    <div className="relative w-full flex flex-col gap-4">
+      <input
+        type="file"
+        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+        ref={fileInputRef}
+        multiple
+        onChange={handleFileChange}
+        tabIndex={-1}
+      />
+
+      {(attachments.length > 0 || uploadQueue.length > 0) && (
+        <div className="flex flex-row gap-2 overflow-x-scroll items-end">
+          {attachments.map((attachment) => (
+            <PreviewAttachment key={attachment.url} attachment={attachment} />
+          ))}
+
+          {uploadQueue.map((filename) => (
+            <PreviewAttachment
+              key={filename}
+              attachment={{
+                url: '',
+                name: filename,
+                contentType: '',
+              }}
+              isUploading={true}
+            />
+          ))}
+        </div>
       )}
-    >
+
       <Textarea
         ref={textareaRef}
         placeholder="Send a message..."
         value={input}
         onChange={handleInput}
+        className={cn(
+          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
+          className,
+          {
+            'border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-500/10': isDragOver,
+          },
+        )}
+        rows={2}
+        autoFocus
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
-            if (!isLoading && input.trim().length > 0) {
+
+            if (isLoading) {
+              toast.error('Please wait for the model to finish its response!');
+            } else {
               submitForm();
             }
           }
         }}
-        className="min-h-[60px] md:min-h-[98px] w-full resize-none bg-transparent px-3 md:px-4 py-3 md:py-[1.3rem] focus-within:outline-none text-sm md:text-base"
-        autoFocus
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
       />
-      <div className="absolute right-2 md:right-4 bottom-2 md:bottom-4 flex items-center gap-2">
+
+      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
+        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
+      </div>
+
+      <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
         {isLoading ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={stop}
-          >
-            <StopIcon />
-            <span className="sr-only">Stop generating</span>
-          </Button>
+          <StopButton stop={stop} setMessages={setMessages} />
         ) : (
-          <Button
-            type="submit"
-            variant="ghost"
-            size="icon"
-            disabled={input.trim().length === 0}
-          >
-            <ArrowUpIcon />
-            <span className="sr-only">Send message</span>
-          </Button>
+          <SendButton
+            input={input}
+            submitForm={submitForm}
+            uploadQueue={uploadQueue}
+          />
         )}
       </div>
-    </form>
+    </div>
   );
 }
 
@@ -152,6 +289,84 @@ export const MultimodalInput = memo(
   (prevProps, nextProps) => {
     if (prevProps.input !== nextProps.input) return false;
     if (prevProps.isLoading !== nextProps.isLoading) return false;
+    if (!equal(prevProps.attachments, nextProps.attachments)) return false;
     return true;
   },
 );
+
+function PureAttachmentsButton({
+  fileInputRef,
+  isLoading,
+}: {
+  fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
+  isLoading: boolean;
+}) {
+  return (
+    <Button
+      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
+      onClick={(event) => {
+        event.preventDefault();
+        fileInputRef.current?.click();
+      }}
+      disabled={isLoading}
+      variant="ghost"
+    >
+      <PaperclipIcon size={14} />
+    </Button>
+  );
+}
+
+const AttachmentsButton = memo(PureAttachmentsButton);
+
+function PureStopButton({
+  stop,
+  setMessages,
+}: {
+  stop: () => void;
+  setMessages: Dispatch<SetStateAction<Array<Message>>>;
+}) {
+  return (
+    <Button
+      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      onClick={(event) => {
+        event.preventDefault();
+        stop();
+        setMessages((messages) => messages);
+      }}
+    >
+      <StopIcon size={14} />
+    </Button>
+  );
+}
+
+const StopButton = memo(PureStopButton);
+
+function PureSendButton({
+  submitForm,
+  input,
+  uploadQueue,
+}: {
+  submitForm: () => void;
+  input: string;
+  uploadQueue: Array<string>;
+}) {
+  return (
+    <Button
+      className="rounded-full p-1.5 h-fit border dark:border-zinc-600"
+      onClick={(event) => {
+        event.preventDefault();
+        submitForm();
+      }}
+      disabled={input.length === 0 || uploadQueue.length > 0}
+    >
+      <ArrowUpIcon size={14} />
+    </Button>
+  );
+}
+
+const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
+  if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
+    return false;
+  if (prevProps.input !== nextProps.input) return false;
+  return true;
+});

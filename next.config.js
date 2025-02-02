@@ -5,6 +5,16 @@
 import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'vnwfuvdbuwhvkiyiveaq.supabase.co',
+        pathname: '/storage/v1/s3/attachments/**',
+      },
+    ],
+  },
+};
 
 export default config;
