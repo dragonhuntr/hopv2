@@ -8,20 +8,23 @@ src/
 │   ├── (auth)/            # Authentication routes
 │   │   ├── login/         # Login page
 │   │   └── register/      # Registration page
+│   │   └── api/           # API routes
 │   ├── (dashboard)/       # Protected routes
 │   │   └── chat/         # Chat functionality
-│   ├── api/               # API routes
+│   │   └── api/          # API routes
 │   ├── layout.tsx         # Root layout
 │   └── globals.css        # Global styles
+│   └── actions.css        # Global styles
 ├── components/
 │   ├── auth/             # Authentication components
 │   ├── chat/             # Chat-related components
-│   ├── layout/           # Layout components
+│   ├── providers/        # Provider components
 │   └── ui/               # Reusable UI components
 ├── lib/                  # Core utilities
 │   ├── auth/             # Auth-related utilities
-│   ├── api/              # API-related utilities
-│   └── utils/            # General utilities
+│   └── ai/               # AI-related utilities
+│   └── utils.ts          # General utilities
+├── hooks/                # Custom hooks
 ├── types/                # TypeScript type definitions
 ├── server/               # Server-side code
 │   ├── auth/             # Auth-related server code
@@ -29,8 +32,9 @@ src/
 │   └── db/               # Database operations
 ├── prisma/               # Prisma schema and queries
 │   └── migrations/       # Prisma migrations
-└── public/               # Public assets
-    └── favicon.ico       # Favicon
+├── public/               # Public assets
+│   └── favicon.ico       # Favicon
+└── middleware.ts         # Middleware for authentication and authorization
 
 ```
 

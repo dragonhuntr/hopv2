@@ -1,18 +1,14 @@
-import { ChatRequestOptions, Message } from 'ai';
+import type { ChatRequestOptions, Message } from 'ai';
 import { PreviewMessage, ThinkingMessage } from '@/components/chat/message';
 import { useScrollToBottom } from '@/components/chat/scroll-to-bottom';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 
 interface MessagesProps {
   chatId: string;
   isLoading: boolean;
-  messages: Array<Message>;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
+  messages: Message[];
+  setMessages: (messages: Message[] | ((messages: Message[]) => Message[])) => void;
+  reload: (chatRequestOptions?: ChatRequestOptions) => Promise<string | null | undefined>;
   isReadonly: boolean;
 }
 
@@ -24,8 +20,19 @@ function PureMessages({
   reload,
   isReadonly,
 }: MessagesProps) {
-  const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>();
+  const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
+
+  // Memoize message update handler
+  const handleSetMessages = useCallback(
+    (updater: Message[] | ((messages: Message[]) => Message[])) => {
+      setMessages(updater);
+    },
+    [setMessages]
+  );
+
+  const isThinking = isLoading && 
+    messages.length > 0 && 
+    messages[messages.length - 1]?.role === 'user';
 
   return (
     <div
@@ -37,16 +44,14 @@ function PureMessages({
           key={message.id}
           chatId={chatId}
           message={message}
-          isLoading={isLoading && messages.length - 1 === index}
-          setMessages={setMessages}
+          isLoading={isLoading && index === messages.length - 1}
+          setMessages={handleSetMessages}
           reload={reload}
           isReadonly={isReadonly}
         />
       ))}
 
-      {isLoading &&
-        messages.length > 0 &&
-        messages[messages.length - 1]?.role === 'user' && <ThinkingMessage />}
+      {isThinking && <ThinkingMessage />}
 
       <div
         ref={messagesEndRef}
@@ -56,24 +61,26 @@ function PureMessages({
   );
 }
 
+// Optimized memo comparison
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
-  // Loading state changes
-  if (prevProps.isLoading !== nextProps.isLoading) return false;
-
-  // Message length check (quick fail)
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-
-  // Compare all messages in the array
-  for (let i = 0; i < prevProps.messages.length; i++) {
-    const prevMsg = prevProps.messages[i];
-    const nextMsg = nextProps.messages[i];
-    
-    if (prevMsg?.id !== nextMsg?.id || 
-        prevMsg?.content !== nextMsg?.content ||
-        prevMsg?.role !== nextMsg?.role) {
-      return false;
-    }
+  if (
+    prevProps.isLoading !== nextProps.isLoading ||
+    prevProps.messages.length !== nextProps.messages.length ||
+    prevProps.chatId !== nextProps.chatId ||
+    prevProps.isReadonly !== nextProps.isReadonly
+  ) {
+    return false;
   }
 
-  return true;
+  // Deep compare messages only if other props are equal
+  return prevProps.messages.every((msg, i) => {
+    const nextMsg = nextProps.messages[i];
+    if (!nextMsg) return false;
+    
+    return (
+      msg.id === nextMsg.id &&
+      msg.content === nextMsg.content &&
+      msg.role === nextMsg.role
+    );
+  });
 });

@@ -1,102 +1,64 @@
 'use client';
 
-import type { Attachment, Message, ChatRequestOptions } from 'ai';
+import type { Message } from 'ai';
 import { useChat } from 'ai/react';
-import { useState, useCallback, useMemo, useRef, type SetStateAction, useEffect } from 'react';
-import { useSWRConfig } from 'swr';
 import dynamic from 'next/dynamic';
-import { memo } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-
+import type { VisibilityType } from '@/components/chat/visibility-selector';
 import { ChatHeader } from '@/components/chat/chat-header';
-import type { Model } from '@/types/model';
-import { models } from '@/lib/ai/models';
+import { ChatErrorBoundary } from '@/components/chat/error-boundary';
+import { useChatConfig } from '@/hooks/use-chat-config';
+import { useChatPersistence } from '@/hooks/use-chat-persistence';
 
-// Preload dynamic components
-const MultimodalInputPromise = () => import('./multimodal-input').then(mod => mod.MultimodalInput);
-const MessagesPromise = () => import('./messages').then(mod => mod.Messages);
+// Optimize dynamic imports with explicit chunks
+const MultimodalInput = dynamic(
+  () => import('./multimodal-input').then(mod => mod.MultimodalInput),
+  {
+    ssr: false,
+    loading: () => <div className="h-[50px] w-full bg-muted animate-pulse rounded-lg" />
+  }
+);
 
-// Dynamically import heavy components with loading state
-const DynamicMultimodalInput = dynamic(MultimodalInputPromise, {
-  ssr: false,
-  loading: () => <div className="h-[50px] w-full bg-muted animate-pulse rounded-lg" />
-});
+const Messages = dynamic(
+  () => import('./messages').then(mod => mod.Messages),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+);
 
-const DynamicMessages = dynamic(MessagesPromise, {
-  ssr: false,
-  loading: () => <div className="flex-1 flex items-center justify-center">
-    <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-  </div>
-});
+interface ChatProps {
+  id: string;
+  initialMessages: Message[];
+  selectedModelId: string;
+  selectedVisibilityType: VisibilityType;
+  isReadonly: boolean;
+}
 
-// Preload components on mount
-const preloadComponents = () => {
-  MultimodalInputPromise();
-  MessagesPromise();
-};
-
-import { VisibilityType } from '@/components/chat/visibility-selector';
-
-export const Chat = memo(function Chat({
+export function Chat({
   id,
   initialMessages,
   selectedModelId,
   selectedVisibilityType,
   isReadonly,
-}: {
-  id: string;
-  initialMessages: Array<Message>;
-  selectedModelId: string;
-  selectedVisibilityType: VisibilityType;
-  isReadonly: boolean;
-}) {
-  const router = useRouter();
-  const pathname = usePathname();
-  // Preload components on mount
-  useEffect(() => {
-    preloadComponents();
-  }, []);
-
-  const { mutate } = useSWRConfig();
-  const [currentModelId, setCurrentModelId] = useState(selectedModelId);
-  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  
-  // Use refs for event handlers and stable values
-  const messageEventRef = useRef(() => {
-    window.dispatchEvent(new Event('message-sent'));
-  });
-  
-  const mutateRef = useRef(mutate);
-  useEffect(() => {
-    mutateRef.current = mutate;
-  }, [mutate]);
-  
-  // Memoize the mutate callback
-  const handleMutate = useCallback(() => {
-    mutateRef.current('/api/history');
-  }, []);
-
-  // Memoize model change handler
-  const handleModelChange = useCallback((modelId: string) => {
-    setCurrentModelId(modelId);
-  }, []);
-
-  const chatConfig = useMemo(() => ({
+}: ChatProps) {
+  // Use custom hooks for chat configuration and state
+  const {
+    currentModelId,
+    attachments,
+    setAttachments,
+    chatConfig,
+    handleModelChange,
+    isVisionModel,
+  } = useChatConfig({
     id,
-    body: { id, modelId: currentModelId },
     initialMessages,
-    experimental_throttle: 100,
-    onFinish: () => {
-      handleMutate();
-      messageEventRef.current();
-    },
-    onResponse: () => {
-      handleMutate();
-      if (pathname === '/chat') {
-        history.replaceState({}, '', `/chat/${id}`);
-      }
-    }
-  }), [id, currentModelId, initialMessages, handleMutate, pathname]);
+    selectedModelId,
+    selectedVisibilityType,
+  });
 
   const {
     messages,
@@ -110,73 +72,61 @@ export const Chat = memo(function Chat({
     reload,
   } = useChat(chatConfig);
 
-  // Memoize handlers
-  const handleSetInput = useCallback((value: string) => {
-    setInput(value);
-  }, [setInput]);
+  // Use persistence hook
+  useChatPersistence({
+    chatId: id,
+    messages,
+    setMessages,
+  });
 
-  const handleSetMessages = useCallback((value: SetStateAction<Message[]>) => {
-    setMessages(value);
-  }, [setMessages]);
-
-  const handleSetAttachments = useCallback((value: SetStateAction<Attachment[]>) => {
-    setAttachments(value);
-  }, []);
-
-  // Get model vision capability
-  const isVisionModel = useMemo(() => {
-    const model = models.find(m => m.id === currentModelId);
-    return model?.vision ?? false;
-  }, [currentModelId]);
-
-  // Memoize props passed to child components
-  const headerProps = useMemo(() => ({
+  // Props for child components
+  const headerProps = {
     chatId: id,
     selectedModelId: currentModelId,
     onModelChange: handleModelChange,
     selectedVisibilityType,
     isReadonly
-  }), [id, currentModelId, handleModelChange, selectedVisibilityType, isReadonly]);
+  };
 
-  const messagesProps = useMemo(() => ({
+  const messagesProps = {
     chatId: id,
     isLoading,
     messages,
-    setMessages: handleSetMessages,
+    setMessages,
     reload,
     isReadonly,
-  }), [id, isLoading, messages, handleSetMessages, reload, isReadonly]);
+  };
 
-  const multimodalInputProps = useMemo(() => ({
+  const inputProps = {
     chatId: id,
     input,
-    setInput: handleSetInput,
+    setInput,
     handleSubmit,
     isLoading,
     stop,
     attachments,
-    setAttachments: handleSetAttachments,
+    setAttachments,
     messages,
-    setMessages: handleSetMessages,
+    setMessages,
     append,
     isVisionModel
-  }), [id, input, handleSetInput, handleSubmit, isLoading, stop, attachments, handleSetAttachments, messages, handleSetMessages, append, isVisionModel]);
+  };
 
   return (
-    <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader {...headerProps} />
+    <div className="flex flex-col min-w-0 h-dvh bg-background">
+      <ChatHeader {...headerProps} />
+      <ChatErrorBoundary>
         <div className="flex-1 overflow-y-auto">
           <div className="w-full max-w-3xl mx-auto px-4 md:px-8">
-            <DynamicMessages {...messagesProps} />
+            <Messages {...messagesProps} />
           </div>
         </div>
         <div className="w-full max-w-3xl mx-auto px-4 md:px-8 pb-4 md:pb-8">
           {!isReadonly && (
-            <DynamicMultimodalInput {...multimodalInputProps} />
+            <MultimodalInput {...inputProps} />
           )}
         </div>
-      </div>
-    </>
+      </ChatErrorBoundary>
+    </div>
   );
-});
+}
