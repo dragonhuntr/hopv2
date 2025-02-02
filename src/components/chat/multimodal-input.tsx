@@ -82,6 +82,8 @@ function PureMultimodalInput({
   };
 
   const submitForm = () => {
+    if (isLoading || input.trim().length === 0) return;
+    
     handleSubmit();
     setLocalStorageInput('');
     resetHeight();
@@ -110,7 +112,9 @@ function PureMultimodalInput({
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
-            submitForm();
+            if (!isLoading && input.trim().length > 0) {
+              submitForm();
+            }
           }
         }}
         className="min-h-[60px] md:min-h-[98px] w-full resize-none bg-transparent px-3 md:px-4 py-3 md:py-[1.3rem] focus-within:outline-none text-sm md:text-base"
