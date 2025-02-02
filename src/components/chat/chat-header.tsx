@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { memo, useMemo } from 'react';
 import { useSWRConfig } from 'swr';
 
-import { SidebarToggle } from '@/components/chat/sidebar-toggle';
+import { SidebarToggle } from '@/components/sidebar/sidebar-toggle';
 import { NewChat } from '@/components/chat/new-chat';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from '@/components/ui/icons';

@@ -1,7 +1,7 @@
 import { User } from 'next-auth';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarInset, SidebarFooter } from '@/components/ui/sidebar';
-import { SidebarHistory } from '@/components/chat/sidebar-history';
-import { SidebarUserNav } from '@/components/chat/sidebar-user-nav';
+import { SidebarHistory } from '@/components/sidebar/sidebar-history';
+import { SidebarUserNav } from '@/components/sidebar/sidebar-user-nav';
 import { ReactNode } from 'react';
 
 interface ChatLayoutProps {

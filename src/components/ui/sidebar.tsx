@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SidebarToggle } from '@/components/chat/sidebar-toggle';
+import { SidebarToggle } from '@/components/sidebar/sidebar-toggle';
 import { NewChat } from '@/components/chat/new-chat';
 
 import {

@@ -18,6 +18,7 @@ src/
 ├── components/
 │   ├── auth/             # Authentication components
 │   ├── chat/             # Chat-related components
+│   ├── sidebar/          # Sidebar components
 │   ├── providers/        # Provider components
 │   └── ui/               # Reusable UI components
 ├── lib/                  # Core utilities
