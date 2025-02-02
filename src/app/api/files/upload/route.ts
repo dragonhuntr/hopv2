@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '@/env';
 import { auth } from '@/app/(auth)/auth';
@@ -72,6 +72,39 @@ export async function POST(request: Request) {
     console.error('Error uploading file:', error);
     return Response.json(
       { error: 'Failed to upload file' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const pathname = searchParams.get('pathname');
+
+    if (!pathname) {
+      return Response.json({ error: 'No file pathname provided' }, { status: 400 });
+    }
+
+    const key = `uploads/${session.user.id}/${pathname}`;
+
+    const deleteCommand = new DeleteObjectCommand({
+      Bucket: env.S3_BUCKET_NAME,
+      Key: key,
+    });
+
+    await s3Client.send(deleteCommand);
+
+    return Response.json({ message: 'File deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    return Response.json(
+      { error: 'Failed to delete file' },
       { status: 500 }
     );
   }

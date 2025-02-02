@@ -218,7 +218,25 @@ function PureMultimodalInput({
       {(attachments.length > 0 || uploadQueue.length > 0) && (
         <div className="flex flex-row gap-2 overflow-x-scroll items-end">
           {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
+            <PreviewAttachment 
+              key={attachment.url} 
+              attachment={attachment} 
+              onDelete={async (attachment) => {
+                try {
+                  const response = await fetch(`/api/files/upload?pathname=${attachment.name}`, {
+                    method: 'DELETE',
+                  });
+                  
+                  if (!response.ok) {
+                    throw new Error('Failed to delete file');
+                  }
+                  
+                  setAttachments(current => current.filter(a => a.url !== attachment.url));
+                } catch (error) {
+                  toast.error('Failed to delete file');
+                }
+              }}
+            />
           ))}
 
           {uploadQueue.map((filename) => (
