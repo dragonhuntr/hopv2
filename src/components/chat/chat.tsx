@@ -1,9 +1,8 @@
 'use client';
 
-import type { Message } from 'ai';
 import { useChat } from 'ai/react';
 import dynamic from 'next/dynamic';
-import type { VisibilityType } from '@/components/chat/visibility-selector';
+import type { Message, VisibilityType } from '@/types/chat';
 import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatErrorBoundary } from '@/components/chat/error-boundary';
 import { useChatConfig } from '@/hooks/use-chat-config';
@@ -55,7 +54,7 @@ export function Chat({
     isVisionModel,
   } = useChatConfig({
     id,
-    initialMessages,
+    initialMessages: initialMessages.map(msg => ({ ...msg, createdAt: msg.createdAt || new Date() })),
     selectedModelId,
     selectedVisibilityType,
   });
@@ -75,8 +74,12 @@ export function Chat({
   // Use persistence hook
   useChatPersistence({
     chatId: id,
-    messages,
-    setMessages,
+    messages: messages.map(msg => ({ ...msg, createdAt: msg.createdAt || new Date() })),
+    setMessages: messages => setMessages(
+      typeof messages === 'function'
+        ? prev => messages(prev.map(msg => ({ ...msg, createdAt: msg.createdAt || new Date() })))
+        : messages.map(msg => ({ ...msg, createdAt: msg.createdAt || new Date() }))
+    ),
   });
 
   // Props for child components
@@ -113,15 +116,15 @@ export function Chat({
   };
 
   return (
-    <div className="flex flex-col min-w-0 h-dvh bg-background">
+    <div className="flex flex-col min-w-0 h-dvh bg-background md:w-[calc(100%-16rem)] md:max-w-[calc(100%-16rem)] lg:max-w-[calc(100%-16rem)] xl:max-w-[calc(100%-16rem)]">
       <ChatHeader {...headerProps} />
       <ChatErrorBoundary>
-        <div className="flex-1 overflow-y-auto">
-          <div className="w-full max-w-3xl mx-auto px-4 md:px-8">
+        <div className="flex-1 overflow-y-auto min-w-0">
+          <div className="w-full mx-auto px-4 md:px-8 min-w-0">
             <Messages {...messagesProps} />
           </div>
         </div>
-        <div className="w-full max-w-3xl mx-auto px-4 md:px-8 pb-4 md:pb-8">
+        <div className="w-full mx-auto px-4 md:px-8 pb-4 md:pb-8">
           {!isReadonly && (
             <MultimodalInput {...inputProps} />
           )}

@@ -40,15 +40,16 @@ function PureMessages({
       className="flex flex-col min-w-0 gap-3 md:gap-6 flex-1 px-0 py-4 md:py-6 scrollbar-thin scrollbar-thumb-secondary"
     >
       {messages.map((message, index) => (
-        <PreviewMessage
-          key={message.id}
-          chatId={chatId}
-          message={message}
-          isLoading={isLoading && index === messages.length - 1}
-          setMessages={handleSetMessages}
-          reload={reload}
-          isReadonly={isReadonly}
-        />
+        <div key={message.id} className="min-w-0 overflow-hidden">
+          <PreviewMessage
+            chatId={chatId}
+            message={message}
+            isLoading={isLoading && index === messages.length - 1}
+            setMessages={handleSetMessages}
+            reload={reload}
+            isReadonly={isReadonly}
+          />
+        </div>
       ))}
 
       {isThinking && <ThinkingMessage />}

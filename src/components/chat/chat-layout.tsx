@@ -25,7 +25,7 @@ export function ChatLayout({ children, user, defaultOpen = true }: ChatLayoutPro
           )}
         </Sidebar>
         <SidebarInset className="flex-1">
-          <div className="flex h-screen w-full flex-col">
+          <div className="flex h-screen w-full flex-col items-center">
             {children}
           </div>
         </SidebarInset>

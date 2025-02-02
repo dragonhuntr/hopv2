@@ -1,9 +1,12 @@
 import type { Message as AIMessage } from 'ai';
 
 /** 
- * Re-export the AI SDK's Message type to ensure compatibility
+ * Extends the AI SDK's Message type to include creation timestamp
+ * while maintaining compatibility with the base type
  */
-export type Message = AIMessage;
+export interface Message extends AIMessage {
+  createdAt: Date;
+}
 
 /** 
  * Represents a chat conversation between a user and the AI assistant.
