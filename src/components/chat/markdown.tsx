@@ -18,8 +18,27 @@ const parseMarkdown = (markdown: string): MarkdownNode[] => {
   const lines = markdown.split('\n');
   const nodes: MarkdownNode[] = [];
   let currentNode: MarkdownNode | null = null;
+  let isInCodeBlock = false;
 
   for (const line of lines) {
+    // Handle code blocks
+    if (line.startsWith('```')) {
+      if (isInCodeBlock) {
+        isInCodeBlock = false;
+        currentNode = null;
+      } else {
+        isInCodeBlock = true;
+        currentNode = { type: 'code', content: '' };
+        nodes.push(currentNode);
+      }
+      continue;
+    }
+
+    if (isInCodeBlock && currentNode?.type === 'code') {
+      currentNode.content = (currentNode.content ?? '') + line + '\n';
+      continue;
+    }
+
     // Handle headings
     const headingMatch = line.match(/^(#{1,6})\s(.+)/);
     if (headingMatch && headingMatch[1] && headingMatch[2]) {
@@ -28,22 +47,6 @@ const parseMarkdown = (markdown: string): MarkdownNode[] => {
         content: headingMatch[2].trim(),
         level: headingMatch[1].length,
       });
-      continue;
-    }
-
-    // Handle code blocks
-    if (line.startsWith('```')) {
-      if (currentNode?.type === 'code') {
-        currentNode = null;
-      } else {
-        currentNode = { type: 'code', content: '' };
-        nodes.push(currentNode);
-      }
-      continue;
-    }
-
-    if (currentNode?.type === 'code') {
-      currentNode.content = (currentNode.content ?? '') + line + '\n';
       continue;
     }
 
@@ -86,8 +89,8 @@ const parseInlineElements = (text: string): MarkdownNode[] => {
   const nodes: MarkdownNode[] = [];
   let currentText = '';
 
-  // Simple inline parsing for links, code, and bold
-  const regex = /(!?\[([^\]]+)\]\(([^)]+)\))|(`[^`]+`)|(\*\*([^*]+)\*\*)|(__([^_]+)__)/g;
+  // Simple inline parsing for links and bold, but NOT code blocks
+  const regex = /(!?\[([^\]]+)\]\(([^)]+)\))|(\*\*([^*]+)\*\*)|(__([^_]+)__)/g;
   let match;
   let lastIndex = 0;
 
@@ -100,17 +103,11 @@ const parseInlineElements = (text: string): MarkdownNode[] => {
       });
     }
 
-    if (match[0].startsWith('`')) {
-      // Inline code
-      nodes.push({
-        type: 'code',
-        content: match[0].slice(1, -1),
-      });
-    } else if (match[0].startsWith('*') || match[0].startsWith('_')) {
+    if (match[0].startsWith('*') || match[0].startsWith('_')) {
       // Bold text
       nodes.push({
         type: 'bold',
-        content: match[6] || match[8] || '', // Group 6 for **, group 8 for __
+        content: match[5] || match[7] || '', // Group 5 for **, group 7 for __
       });
     } else {
       // Link
