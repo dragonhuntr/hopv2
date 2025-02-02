@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
 import dynamic from 'next/dynamic';
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState, useEffect } from 'react';
 import { useSWRConfig } from 'swr';
 
 import { SidebarToggle } from '@/components/sidebar/sidebar-toggle';
@@ -34,13 +34,18 @@ function PureChatHeader({
   const router = useRouter();
   const { open } = useSidebar();
   const { width: windowWidth = 0 } = useWindowSize();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-2 w-full">
           <div className="flex items-center gap-2 flex-1">
-            {typeof window !== 'undefined' && (!open || windowWidth < 768) && (
+            {isMounted && (!open || windowWidth < 768) && (
               <SidebarToggle />
             )}
             <Button
@@ -48,7 +53,7 @@ function PureChatHeader({
               className="p-0 h-auto"
               onClick={() => router.push('/chat')}
             >
-              <h1 className="text-lg font-semibold text-foreground">HopV2</h1>
+              <span className="text-lg font-semibold text-foreground">HopV2</span>
             </Button>
           </div>
           <div className="flex items-center gap-2">
