@@ -35,6 +35,7 @@ interface MultimodalInputProps {
   ) => void;
   className?: string;
   modelId: string;
+  isVisionModel: boolean;
 }
 
 function PureMultimodalInput({
@@ -51,6 +52,7 @@ function PureMultimodalInput({
   handleSubmit,
   className,
   modelId,
+  isVisionModel,
 }: MultimodalInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -110,8 +112,13 @@ function PureMultimodalInput({
     // Save model before sending message
     saveModelId(chatId, modelId);
 
+    // Clear attachments if not using a vision model
+    if (!isVisionModel) {
+      setAttachments([]);
+    }
+
     handleSubmit(undefined, {
-      experimental_attachments: attachments,
+      experimental_attachments: isVisionModel ? attachments : [],
     });
 
     setAttachments([]);
@@ -129,6 +136,7 @@ function PureMultimodalInput({
     width,
     chatId,
     modelId,
+    isVisionModel,
   ]);
 
   const uploadFile = async (file: File): Promise<Attachment | undefined> => {
@@ -213,16 +221,18 @@ function PureMultimodalInput({
 
   return (
     <div className="relative w-full flex flex-col gap-4">
-      <input
-        type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
-        ref={fileInputRef}
-        multiple
-        onChange={handleFileChange}
-        tabIndex={-1}
-      />
+      {isVisionModel && (
+        <input
+          type="file"
+          className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+          ref={fileInputRef}
+          multiple
+          onChange={handleFileChange}
+          tabIndex={-1}
+        />
+      )}
 
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
+      {isVisionModel && (attachments.length > 0 || uploadQueue.length > 0) && (
         <div className="flex flex-row gap-2 overflow-x-scroll items-end">
           {attachments.map((attachment) => (
             <PreviewAttachment 
@@ -269,7 +279,7 @@ function PureMultimodalInput({
           'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
           className,
           {
-            'border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-500/10': isDragOver,
+            'border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-500/10': isDragOver && isVisionModel,
           },
         )}
         rows={2}
@@ -285,13 +295,22 @@ function PureMultimodalInput({
             }
           }
         }}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        onDrop={(event) => {
+          if (!isVisionModel) return;
+          handleDrop(event);
+        }}
+        onDragOver={(event) => {
+          if (!isVisionModel) return;
+          handleDragOver(event);
+        }}
+        onDragLeave={() => {
+          if (!isVisionModel) return;
+          handleDragLeave();
+        }}
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
+        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} isVisionModel={isVisionModel} />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
@@ -312,31 +331,38 @@ function PureMultimodalInput({
 export const MultimodalInput = memo(
   PureMultimodalInput,
   (prevProps, nextProps) => {
-    if (prevProps.input !== nextProps.input) return false;
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
-    if (!equal(prevProps.attachments, nextProps.attachments)) return false;
-    return true;
+    return (
+      prevProps.input === nextProps.input &&
+      prevProps.isLoading === nextProps.isLoading &&
+      prevProps.modelId === nextProps.modelId &&
+      prevProps.isVisionModel === nextProps.isVisionModel &&
+      equal(prevProps.attachments, nextProps.attachments) &&
+      equal(prevProps.messages, nextProps.messages)
+    );
   },
 );
 
 function PureAttachmentsButton({
   fileInputRef,
   isLoading,
+  isVisionModel,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   isLoading: boolean;
+  isVisionModel: boolean;
 }) {
+  if (!isVisionModel) return null;
+  
   return (
     <Button
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
-      onClick={(event) => {
-        event.preventDefault();
-        fileInputRef.current?.click();
-      }}
-      disabled={isLoading}
       variant="ghost"
+      size="icon"
+      type="button"
+      onClick={() => fileInputRef.current?.click()}
+      disabled={isLoading}
+      className="flex-none"
     >
-      <PaperclipIcon size={14} />
+      <PaperclipIcon size={16} />
     </Button>
   );
 }

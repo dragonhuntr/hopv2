@@ -30,8 +30,12 @@ export function SidebarToggle({
           )}
         >
           <SidebarLeftIcon size={16} />
+          <span className="sr-only">Toggle Sidebar</span>
         </Button>
       </TooltipTrigger>
+      <TooltipContent side="right">
+        Toggle Sidebar
+      </TooltipContent>
     </Tooltip>
   );
 }

@@ -33,14 +33,16 @@ function PureChatHeader({
 }) {
   const router = useRouter();
   const { open } = useSidebar();
-  const { width: windowWidth } = useWindowSize();
+  const { width: windowWidth = 0 } = useWindowSize();
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className=" mx-auto px-4 py-3">
+      <div className="mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-2 w-full">
           <div className="flex items-center gap-2 flex-1">
-            {(!open || windowWidth < 768) && <SidebarToggle />}
+            {typeof window !== 'undefined' && (!open || windowWidth < 768) && (
+              <SidebarToggle />
+            )}
             <Button
               variant="link"
               className="p-0 h-auto"
@@ -49,18 +51,15 @@ function PureChatHeader({
               <h1 className="text-lg font-semibold text-foreground">HopV2</h1>
             </Button>
           </div>
-
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {(!open || windowWidth < 768) && <NewChat />}
-            {!isReadonly && (
-              <>
-                <DynamicModelSelector
-                  selectedModelId={selectedModelId}
-                  onModelChange={onModelChange}
-                  chatId={chatId}
-                />
-              </>
+          <div className="flex items-center gap-2">
+            {chatId && !isReadonly && (
+              <DynamicModelSelector
+                selectedModelId={selectedModelId}
+                onModelChange={onModelChange}
+                chatId={chatId}
+              />
             )}
+            <NewChat />
           </div>
         </div>
       </div>
@@ -68,9 +67,4 @@ function PureChatHeader({
   );
 }
 
-export const ChatHeader = memo(PureChatHeader, (prev, next) => {
-  return prev.chatId === next.chatId &&
-         prev.selectedModelId === next.selectedModelId &&
-         prev.selectedVisibilityType === next.selectedVisibilityType &&
-         prev.isReadonly === next.isReadonly;
-});
+export const ChatHeader = memo(PureChatHeader);
