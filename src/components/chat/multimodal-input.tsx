@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 import { cn } from '@/lib/utils';
 import equal from 'fast-deep-equal';
+import { saveModelId } from '@/app/(dashboard)/actions';
 
 import { ArrowUpIcon, StopIcon, PaperclipIcon } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ interface MultimodalInputProps {
   isLoading: boolean;
   stop: () => void;
   attachments: Array<Attachment>;
-  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
+  setAttachments: (value: Array<Attachment> | ((prev: Array<Attachment>) => Array<Attachment>)) => void;
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: (
@@ -33,6 +34,7 @@ interface MultimodalInputProps {
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
   className?: string;
+  modelId: string;
 }
 
 function PureMultimodalInput({
@@ -48,6 +50,7 @@ function PureMultimodalInput({
   append,
   handleSubmit,
   className,
+  modelId,
 }: MultimodalInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -104,6 +107,9 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
+    // Save model before sending message
+    saveModelId(chatId, modelId);
+
     handleSubmit(undefined, {
       experimental_attachments: attachments,
     });
@@ -122,6 +128,7 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    modelId,
   ]);
 
   const uploadFile = async (file: File): Promise<Attachment | undefined> => {

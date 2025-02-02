@@ -45,17 +45,6 @@ export function ModelSelector({
       setOptimisticModelId(modelId);
       onModelChange(modelId);
     });
-    
-    // Save model change in background without triggering revalidation
-    try {
-      await saveModelId(chatId, modelId);
-    } catch (error) {
-      console.error('Failed to save model change:', error);
-      // Revert optimistic update on error, but only update once
-      startTransition(() => {
-        setOptimisticModelId(selectedModelId);
-      });
-    }
   };
 
   return (

@@ -112,7 +112,8 @@ export function Chat({
     messages,
     setMessages,
     append,
-    isVisionModel
+    isVisionModel,
+    modelId: currentModelId
   };
 
   return (
