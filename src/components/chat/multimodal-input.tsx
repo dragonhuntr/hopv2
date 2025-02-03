@@ -5,6 +5,7 @@ import React, { useRef, useEffect, useState, useCallback, type Dispatch, type Se
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 import { cn } from '@/lib/utils';
+import { generateUUID } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import { saveModelId } from '@/app/(dashboard)/actions';
 
@@ -151,12 +152,12 @@ function PureMultimodalInput({
 
       if (response.ok) {
         const data = await response.json();
-        const { url, pathname, contentType } = data;
+        const { url, name, contentType } = data;
 
         return {
           url,
-          name: pathname,
-          contentType: contentType,
+          name,
+          contentType,
         };
       }
       const { error } = await response.json();

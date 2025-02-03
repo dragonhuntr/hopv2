@@ -7,6 +7,7 @@ import { ChatHeader } from '@/components/chat/chat-header';
 import { ChatErrorBoundary } from '@/components/chat/error-boundary';
 import { useChatConfig } from '@/hooks/use-chat-config';
 import { useChatPersistence } from '@/hooks/use-chat-persistence';
+import type { Attachment } from 'ai';
 
 // Optimize dynamic imports with explicit chunks
 const MultimodalInput = dynamic(
@@ -48,7 +49,7 @@ export function Chat({
   const {
     currentModelId,
     attachments,
-    setAttachments,
+    setAttachments: setAttachmentsRaw,
     chatConfig,
     handleModelChange,
     isVisionModel,
@@ -58,6 +59,11 @@ export function Chat({
     selectedModelId,
     selectedVisibilityType,
   });
+
+  // Create a setState-compatible setter
+  const setAttachments = (value: Attachment[] | ((prev: Attachment[]) => Attachment[])) => {
+    setAttachmentsRaw(typeof value === 'function' ? value(attachments) : value);
+  };
 
   const {
     messages,

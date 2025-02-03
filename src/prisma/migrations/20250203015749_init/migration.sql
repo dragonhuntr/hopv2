@@ -1,3 +1,12 @@
+-- CreateEnum
+CREATE TYPE "Visibility" AS ENUM ('public', 'private');
+
+-- CreateEnum
+CREATE TYPE "DocumentKind" AS ENUM ('text', 'code');
+
+-- CreateEnum
+CREATE TYPE "MessageRole" AS ENUM ('user', 'assistant', 'system', 'data');
+
 -- CreateTable
 CREATE TABLE "Account" (
     "id" TEXT NOT NULL,
@@ -18,31 +27,13 @@ CREATE TABLE "Account" (
 );
 
 -- CreateTable
-CREATE TABLE "Session" (
-    "id" TEXT NOT NULL,
-    "sessionToken" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "expires" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "name" TEXT,
     "email" TEXT,
-    "emailVerified" TIMESTAMP(3),
     "password" TEXT NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "VerificationToken" (
-    "identifier" TEXT NOT NULL,
-    "token" TEXT NOT NULL,
-    "expires" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -51,6 +42,8 @@ CREATE TABLE "Chat" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "title" TEXT,
     "userId" TEXT NOT NULL,
+    "model" TEXT NOT NULL,
+    "visibility" "Visibility" NOT NULL DEFAULT 'private',
 
     CONSTRAINT "Chat_pkey" PRIMARY KEY ("id")
 );
@@ -59,27 +52,31 @@ CREATE TABLE "Chat" (
 CREATE TABLE "Message" (
     "id" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "role" TEXT NOT NULL,
+    "role" "MessageRole" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "chatId" TEXT NOT NULL,
 
     CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Attachment" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "contentType" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "messageId" TEXT NOT NULL,
+
+    CONSTRAINT "Attachment_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
-
--- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
-
--- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
 -- CreateIndex
 CREATE INDEX "Chat_userId_idx" ON "Chat"("userId");
@@ -87,14 +84,17 @@ CREATE INDEX "Chat_userId_idx" ON "Chat"("userId");
 -- CreateIndex
 CREATE INDEX "Message_chatId_idx" ON "Message"("chatId");
 
--- AddForeignKey
-ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- CreateIndex
+CREATE INDEX "Attachment_messageId_idx" ON "Attachment"("messageId");
 
 -- AddForeignKey
-ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Chat" ADD CONSTRAINT "Chat_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Message" ADD CONSTRAINT "Message_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "Chat"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Attachment" ADD CONSTRAINT "Attachment_messageId_fkey" FOREIGN KEY ("messageId") REFERENCES "Message"("id") ON DELETE CASCADE ON UPDATE CASCADE;

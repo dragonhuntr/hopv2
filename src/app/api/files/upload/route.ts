@@ -3,6 +3,8 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '@/env';
 import { auth } from '@/app/(auth)/auth';
 import { generateUUID } from '@/lib/utils';
+import { validateAttachment } from '@/lib/attachment-validator';
+import { createAttachment, deleteAttachment, getAttachment } from '@/prisma/queries';
 
 const s3Client = new S3Client({
   region: env.S3_REGION,
@@ -23,23 +25,27 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
+    const messageId = formData.get('messageId') as string | null;
 
     if (!file) {
       return Response.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      return Response.json({ error: 'Only image files are allowed' }, { status: 400 });
+    // Validate the attachment
+    const validationResult = validateAttachment({
+      name: file.name,
+      size: file.size,
+      contentType: file.type
+    });
+
+    if (!validationResult.isValid || !validationResult.sanitizedName) {
+      return Response.json(
+        { error: validationResult.error || 'Invalid file' },
+        { status: 400 }
+      );
     }
 
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      return Response.json({ error: 'File size exceeds 5MB limit' }, { status: 400 });
-    }
-
-    const fileExtension = file.name.split('.').pop() || '';
-    const uniqueFilename = `${generateUUID()}.${fileExtension}`;
+    const uniqueFilename = `${generateUUID()}${getFileExtension(validationResult.sanitizedName)}`;
     const key = `uploads/${session.user.id}/${uniqueFilename}`;
 
     // Get file buffer
@@ -50,7 +56,7 @@ export async function POST(request: Request) {
       Bucket: env.S3_BUCKET_NAME,
       Key: key,
       Body: buffer,
-      ContentType: file.type,
+      ContentType: validationResult.contentType,
     });
 
     await s3Client.send(putCommand);
@@ -63,10 +69,20 @@ export async function POST(request: Request) {
 
     const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
 
+    // Save attachment metadata to database if messageId is provided
+    if (messageId) {
+      await createAttachment({
+        name: validationResult.sanitizedName,
+        url: key,
+        contentType: validationResult.contentType!,
+        messageId
+      });
+    }
+
     return Response.json({
       url: signedUrl,
-      pathname: uniqueFilename,
-      contentType: file.type,
+      name: validationResult.sanitizedName,
+      contentType: validationResult.contentType
     });
   } catch (error) {
     console.error('Error uploading file:', error);
@@ -77,6 +93,13 @@ export async function POST(request: Request) {
   }
 }
 
+// Helper function to get file extension with dot
+const getFileExtension = (filename: string): string => {
+  if (!filename) return '';
+  const ext = filename.toLowerCase().split('.').pop();
+  return ext ? `.${ext}` : '';
+};
+
 export async function DELETE(request: Request) {
   try {
     const session = await auth();
@@ -85,20 +108,29 @@ export async function DELETE(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const pathname = searchParams.get('pathname');
+    const attachmentId = searchParams.get('id');
 
-    if (!pathname) {
-      return Response.json({ error: 'No file pathname provided' }, { status: 400 });
+    if (!attachmentId) {
+      return Response.json({ error: 'No attachment ID provided' }, { status: 400 });
     }
 
-    const key = `uploads/${session.user.id}/${pathname}`;
+    // Get attachment from database
+    const attachment = await getAttachment(attachmentId);
 
+    if (!attachment) {
+      return Response.json({ error: 'Attachment not found' }, { status: 404 });
+    }
+
+    // Delete from S3
     const deleteCommand = new DeleteObjectCommand({
       Bucket: env.S3_BUCKET_NAME,
-      Key: key,
+      Key: attachment.url,
     });
 
     await s3Client.send(deleteCommand);
+
+    // Delete from database
+    await deleteAttachment(attachmentId);
 
     return Response.json({ message: 'File deleted successfully' });
   } catch (error) {

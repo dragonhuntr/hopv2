@@ -1,7 +1,7 @@
 import { PrismaClient, type User } from '@prisma/client';
 import { genSaltSync, hashSync } from 'bcrypt-ts';
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
 export async function getUser(email: string): Promise<User | null> {
 
@@ -94,11 +94,29 @@ export async function saveMessages({ messages }: { messages: Array<{
   role: string;
   content: string;
   createdAt: Date;
+  attachments?: Array<{
+    url: string;
+    name: string;
+    contentType: string;
+  }>;
 }> }) {
   try {
-    return await prisma.message.createMany({
-      data: messages
+    // Save messages first
+    await prisma.message.createMany({
+      data: messages.map(({ attachments, ...message }) => message)
     });
+
+    // Then create attachments for messages that have them
+    for (const message of messages) {
+      if (message.attachments?.length) {
+        await prisma.attachment.createMany({
+          data: message.attachments.map(attachment => ({
+            ...attachment,
+            messageId: message.id
+          }))
+        });
+      }
+    }
   } catch (error) {
     console.error('Failed to save messages in database', error);
     throw error;
@@ -198,6 +216,54 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
     });
   } catch (error) {
     console.error('Failed to delete all chats for user from database');
+    throw error;
+  }
+}
+
+export async function createAttachment({
+  name,
+  url,
+  contentType,
+  messageId,
+}: {
+  name: string;
+  url: string;
+  contentType: string;
+  messageId: string;
+}) {
+  try {
+    return await prisma.attachment.create({
+      data: {
+        name,
+        url,
+        contentType,
+        messageId,
+      }
+    });
+  } catch (error) {
+    console.error('Failed to create attachment in database');
+    throw error;
+  }
+}
+
+export async function deleteAttachment(id: string) {
+  try {
+    return await prisma.attachment.delete({
+      where: { id }
+    });
+  } catch (error) {
+    console.error('Failed to delete attachment from database');
+    throw error;
+  }
+}
+
+export async function getAttachment(id: string) {
+  try {
+    return await prisma.attachment.findUnique({
+      where: { id }
+    });
+  } catch (error) {
+    console.error('Failed to get attachment from database');
     throw error;
   }
 }

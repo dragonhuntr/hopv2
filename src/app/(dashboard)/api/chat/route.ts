@@ -2,6 +2,7 @@ import {
     type Message,
     convertToCoreMessages,
     createDataStreamResponse,
+    smoothStream,
     streamText,
 } from 'ai';
 
@@ -27,8 +28,11 @@ export async function POST(request: Request) {
         id,
         messages,
         modelId = DEFAULT_MODEL_ID,
-    }: { id: string, messages: Array<Message>; modelId: string } =
-        await request.json();
+    }: { 
+        id: string, 
+        messages: Array<Message & { attachments?: Array<{ url: string; name: string; contentType: string; }> }>;
+        modelId: string 
+    } = await request.json();
 
     const session = await auth();
 
@@ -57,10 +61,18 @@ export async function POST(request: Request) {
     }
 
     const userMessageId = generateUUID();
+    const lastMessage = messages[messages.length - 1];
 
     await saveMessages({
         messages: [
-            { ...userMessage, id: userMessageId, createdAt: new Date(), chatId: id, content: userMessage.content as string },
+            { 
+                ...userMessage, 
+                id: userMessageId, 
+                createdAt: new Date(), 
+                chatId: id, 
+                content: userMessage.content as string,
+                attachments: lastMessage?.attachments 
+            },
         ],
     });
 
@@ -75,6 +87,7 @@ export async function POST(request: Request) {
                 model: customModel(model.apiIdentifier),
                 system: systemPrompt,
                 messages: coreMessages,
+                experimental_transform: smoothStream(), 
                 maxSteps: 5,
                 onFinish: async ({ response }) => {
                   if (session.user?.id) {
