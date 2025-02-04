@@ -1,9 +1,9 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '@/env';
-import { auth } from '@/app/(auth)/auth';
+import { authClient } from '@/app/(auth)/auth';
 import { generateUUID } from '@/lib/utils';
-import { validateAttachment } from '@/lib/attachment-validator';
+import { validateAttachment } from '@/lib/attachments/attachment-validator';
 import { createAttachment, deleteAttachment, getAttachment } from '@/prisma/queries';
 
 const s3Client = new S3Client({
@@ -18,8 +18,8 @@ const s3Client = new S3Client({
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const session = await authClient.getSession()
+    if (!session?.data?.user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     }
 
     const uniqueFilename = `${generateUUID()}${getFileExtension(validationResult.sanitizedName)}`;
-    const key = `uploads/${session.user.id}/${uniqueFilename}`;
+    const key = `uploads/${session.data.user.id}/${uniqueFilename}`;
 
     // Get file buffer
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -102,8 +102,8 @@ const getFileExtension = (filename: string): string => {
 
 export async function DELETE(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const session = await authClient.useSession()
+    if (!session?.data?.user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

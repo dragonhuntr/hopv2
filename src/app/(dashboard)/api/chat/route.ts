@@ -14,7 +14,7 @@ import {
     deleteAllChatsByUserId,
 } from '@/prisma/queries';
 
-import { auth } from '@/app/(auth)/auth';
+import { authClient } from '@/app/(auth)/auth';
 import { customModel } from '@/lib/ai';
 import { models, DEFAULT_MODEL_ID, DEFAULT_TITLE_MODEL_ID } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
@@ -34,9 +34,9 @@ export async function POST(request: Request) {
         modelId: string 
     } = await request.json();
 
-    const session = await auth();
+    const session = await authClient.getSession()
 
-    if (!session || !session.user || !session.user.id) {
+    if (!session?.data?.user?.id) {
         return new Response('Unauthorized', { status: 401 });
     }
 
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
     if (!chat) {
         const title = await generateTitleFromUserMessage({ message: userMessage, model: DEFAULT_TITLE_MODEL_ID });
-        await saveChat({ id, userId: session.user.id, title, model: model.apiIdentifier });
+        await saveChat({ id, userId: session.data.user.id, title, model: model.apiIdentifier });
     }
 
     const userMessageId = generateUUID();
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
                 experimental_transform: smoothStream(), 
                 maxSteps: 5,
                 onFinish: async ({ response }) => {
-                  if (session.user?.id) {
+                  if (session.data.user?.id) {
                     try {
 
                       await saveMessages({
@@ -131,9 +131,9 @@ export async function DELETE(request: Request) {
     const id = searchParams.get('id');
     const deleteAll = searchParams.get('deleteAll');
   
-    const session = await auth();
+    const { data: session } = await authClient.getSession()
   
-    if (!session || !session.user || !session.user.id) {
+    if (!session?.user?.id) {
       return new Response('Unauthorized', { status: 401 });
     }
   

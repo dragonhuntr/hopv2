@@ -3,7 +3,6 @@ import "./globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { Toaster } from "sonner";
-import { NextAuthProvider } from "@/components/providers/next-auth-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
 export const metadata: Metadata = {
@@ -19,10 +18,8 @@ export default function RootLayout({
     <html lang="en" className={GeistSans.variable}>
       <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider>
-          <NextAuthProvider>
-            {children}
-            <Toaster />
-          </NextAuthProvider>
+          {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

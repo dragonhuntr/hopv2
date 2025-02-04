@@ -1,14 +1,11 @@
+import { PrismaClient } from '@prisma/client';
+
 import type {
-  CoreAssistantMessage,
   CoreMessage,
-  CoreToolMessage,
-  Message,
 } from 'ai';
 
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-
-import type { Message as DBMessage, Document } from '@/lib/db/schema';
 
 interface ApplicationError extends Error {
   info: string;
@@ -49,27 +46,4 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export function convertToUIMessages(
-  messages: Array<DBMessage>,
-): Array<Message> {
-  return messages.reduce((chatMessages: Array<Message>, message) => {
-    let textContent = '';
-    if (typeof message.content === 'string') {
-      textContent = message.content;
-    } else if (Array.isArray(message.content)) {
-      for (const content of message.content) {
-        if (content.type === 'text') {
-          textContent += content.text;
-        }
-      }
-    }
-
-    chatMessages.push({
-      id: message.id,
-      role: message.role as Message['role'],
-      content: textContent
-    });
-
-    return chatMessages;
-  }, []);
-}
+export const prisma = new PrismaClient(); 

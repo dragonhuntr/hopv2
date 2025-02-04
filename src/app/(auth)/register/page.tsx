@@ -1,46 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-
 import { AuthForm } from '@/components/auth/auth-form';
 import { SubmitButton } from '@/components/ui/submit-button';
+import { useAuth } from '@/hooks/use-auth';
 
-import { register, type RegisterActionState } from '@/app/(auth)/actions';
-
-export default function Page() {
-  const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [isSuccessful, setIsSuccessful] = useState(false);
-
-  const [state, formAction] = useActionState<RegisterActionState, FormData>(
-    register,
-    {
-      status: 'idle',
-    },
-  );
-
-  useEffect(() => {
-    if (state.status === 'user_exists') {
-      toast.error('Account already exists');
-    } else if (state.status === 'failed') {
-      toast.error('Failed to create account');
-    } else if (state.status === 'invalid_data') {
-      toast.error('Failed validating your submission!');
-    } else if (state.status === 'success') {
-      toast.success('Account created successfully');
-      setIsSuccessful(true);
-      router.refresh();
-    }
-  }, [state, router]);
-
-  const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
-    formAction(formData);
-  };
+export default function SignUp() {
+  const { register, isSuccessful } = useAuth();
 
   return (
     <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
@@ -50,8 +16,8 @@ export default function Page() {
           <p className="text-sm text-gray-500 dark:text-zinc-400">
             Create an account with your email and password
           </p>
-        </div>
-        <AuthForm action={handleSubmit} defaultEmail={email}>
+        </div> 
+        <AuthForm action={register}>
           <SubmitButton isSuccessful={isSuccessful}>Sign Up</SubmitButton>
           <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
             {'Already have an account? '}

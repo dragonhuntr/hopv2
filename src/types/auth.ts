@@ -1,35 +1,19 @@
 // src/types/auth.ts
 
-import { type DefaultSession } from "next-auth";
-
-/**
- * Module augmentation for `next-auth` types
- */
-declare module "next-auth" {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-    } & DefaultSession["user"];
-  }
-
-  interface User {
-    id?: string;
-    email?: string | null;
-    name?: string | null;
-    password?: string;
-  }
-}
-
-export interface AuthUser {
+export interface User {
   id: string;
   email: string | null;
   name: string | null;
-  password?: string;
+  image?: string | null;
 }
 
-export type Credentials = {
+export interface Session {
+  user: User;
+}
+
+export interface Credentials {
   email: string;
   password: string;
   name?: string;
   isRegistering?: string;
-};
+}
