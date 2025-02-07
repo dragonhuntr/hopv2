@@ -18,52 +18,63 @@ enum DocumentKind {
 }
 
 model Account {
-  id                       String  @id @default(uuid())
-  userId                   String
-  type                     String
-  provider                 String
-  providerAccountId        String
-  refresh_token            String? // @db.Text
-  access_token             String? // @db.Text
-  expires_at               Int?
-  token_type               String?
-  scope                    String?
-  id_token                 String? // @db.Text
-  session_state            String?
-  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  refresh_token_expires_in Int?
+  id                    String    @id
+  userId                String
+  accountId             String    // Required by Better Auth
+  providerId            String    // Required by Better Auth
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken              String?
+  password             String?   // For email/password auth
+  createdAt            DateTime
+  updatedAt            DateTime
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+  // Remove these legacy/duplicate fields
+  // type, provider, providerAccountId, refresh_token, access_token,
+  // expires_at, token_type, session_state, refresh_token_expires_in
+
+  @@map("account")
 }
 
 model User {
-  id            String    @id @default(uuid())
-  name          String?
+  id            String    @id
+  name          String    // Remove optional (?)
   email         String?   @unique
-  password      String    @db.Text
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
   accounts      Account[]
+  sessions      Session[]
+  // You can keep your custom relations
   Chat          Chat[]
+
+  @@map("user")
 }
 
 model Chat {
-  id        String   @id @default(uuid())
-  createdAt DateTime  @default(now())
-  title     String?
-  messages  Message[]
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  model     String
+  id         String     @id @default(uuid())
+  createdAt  DateTime   @default(now())
+  title      String?
+  messages   Message[]
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  model      String
   visibility Visibility @default(private)
 
   @@index([userId])
 }
 
 model Message {
-  id          String   @id @default(uuid())
+  id          String       @id @default(uuid())
   content     Json
   role        String // "user" or "assistant"
-  createdAt   DateTime @default(now())
-  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  chat        Chat         @relation(fields: [chatId], references: [id], onDelete: Cascade)
   chatId      String
   attachments Attachment[]
 
@@ -74,11 +85,36 @@ model Attachment {
   id          String   @id @default(uuid())
   name        String
   url         String
-  contentType String   // Stores MIME type (e.g. "image/jpeg", "application/pdf")
+  contentType String // Stores MIME type (e.g. "image/jpeg", "application/pdf")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
   messageId   String
 
   @@index([messageId])
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime
+  updatedAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime
+  updatedAt  DateTime
+
+  @@map("verification")
 }

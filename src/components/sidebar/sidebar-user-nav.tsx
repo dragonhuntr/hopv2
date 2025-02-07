@@ -1,13 +1,12 @@
 'use client';
 
 import { ChevronUp } from 'lucide-react';
-import Image from 'next/image';
-import type { User } from 'next-auth';
-import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { useSWRConfig } from 'swr';
 import { useState } from 'react';
+import { authClient } from '@/app/(auth)/auth';
+import type { User } from '@/types/auth';
 
 import {
   DropdownMenu,
@@ -91,10 +90,9 @@ export function SidebarUserNav({ user }: { user: User }) {
                 <button
                   type="button"
                   className="w-full cursor-pointer"
-                  onClick={() => {
-                    signOut({
-                      redirectTo: '/',
-                    });
+                  onClick={async () => {
+                    await authClient.signOut();
+                    router.push('/');
                   }}
                 >
                   Sign out
