@@ -31,12 +31,26 @@ export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
 }
 
 export function convertToUIMessages(messages: any[]): Message[] {
-  return messages.map((message) => ({
-    id: message.id,
-    content: message.content,
-    role: message.role,
-    createdAt: message.createdAt,
-  }));
+  return messages.map((message) => {
+    let textContent = '';
+
+    if (typeof message.content === 'string') {
+      textContent = message.content;
+    } else if (Array.isArray(message.content)) {
+      for (const content of message.content) {
+        if (content.type === 'text') {
+          textContent += content.text;
+        }
+      }
+    }
+
+    return {
+      id: message.id,
+      content: textContent,
+      role: message.role,
+      createdAt: message.createdAt,
+    };
+  });
 }
 
 export const fetcher = async (url: string) => {

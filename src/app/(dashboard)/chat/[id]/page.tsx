@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 
-import { authClient } from '@/app/(auth)/auth';
+import { headers } from 'next/headers';
+import { auth } from '@/lib/auth';
 import { Chat } from '@/components/chat/chat';
 import { DEFAULT_MODEL_ID, models } from '@/lib/ai/models';
 import { getChatById, getMessagesByChatId } from '@/prisma/queries';
@@ -15,7 +16,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   // Run queries in parallel
   const [chat, session] = await Promise.all([
     getChatById({ id }),
-    authClient.getSession()
+    await auth.api.getSession({
+      headers: await headers(),
+    })
   ]);
 
   if (!chat) {

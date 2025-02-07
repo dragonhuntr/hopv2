@@ -15,6 +15,7 @@ interface MarkdownProps {
 }
 
 const parseMarkdown = (markdown: string): MarkdownNode[] => {
+  console.log(markdown)
   const lines = markdown.split('\n');
   const nodes: MarkdownNode[] = [];
   let currentNode: MarkdownNode | null = null;

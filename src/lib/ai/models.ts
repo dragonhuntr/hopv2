@@ -8,13 +8,13 @@ export const models: Array<Model> = [
         description: 'For complex, multi-step tasks',
         vision: false,
     },
-    {
+    /**{
         id: 'llama3.2-vision',
         label: 'Llama 3.2 Vision',
         apiIdentifier: 'llama3.2-vision',
         description: 'For complex, multi-step tasks',
         vision: true,
-    },
+    },*/
     {
         id: 'deepseek-r1',
         label: 'DeepSeek-R1',
