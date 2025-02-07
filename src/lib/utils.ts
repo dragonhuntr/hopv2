@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 import type {
   CoreMessage,
+  Message,
 } from 'ai';
 
 import { clsx, type ClassValue } from "clsx"
@@ -27,6 +28,15 @@ export function generateUUID(): string {
 export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);
+}
+
+export function convertToUIMessages(messages: any[]): Message[] {
+  return messages.map((message) => ({
+    id: message.id,
+    content: message.content,
+    role: message.role,
+    createdAt: message.createdAt,
+  }));
 }
 
 export const fetcher = async (url: string) => {

@@ -22,7 +22,14 @@ export const models: Array<Model> = [
         description: 'For complex, multi-step tasks',
         vision: false,
     },
+    {
+        id: 'gemini-flash',
+        label: 'Gemini Flash 2.0',
+        apiIdentifier: 'gemini-flash',
+        description: 'For complex, multi-step tasks',
+        vision: false,
+    },
 ] as const;
 
 export const DEFAULT_MODEL_ID: string = 'llama3.3';
-export const DEFAULT_TITLE_MODEL_ID: string = 'llama3.2-vision';
+export const DEFAULT_TITLE_MODEL_ID: string = 'gemini-flash';

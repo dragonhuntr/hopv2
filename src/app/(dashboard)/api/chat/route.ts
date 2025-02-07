@@ -14,7 +14,7 @@ import {
     deleteAllChatsByUserId,
 } from '@/prisma/queries';
 
-import { authClient } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { customModel } from '@/lib/ai';
 import { models, DEFAULT_MODEL_ID, DEFAULT_TITLE_MODEL_ID } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
@@ -34,10 +34,12 @@ export async function POST(request: Request) {
         modelId: string 
     } = await request.json();
 
-    const session = await authClient.getSession()
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
-    if (!session?.data?.user?.id) {
-        return new Response('Unauthorized', { status: 401 });
+    if (!session?.user?.id) {
+      return Response.json('Unauthorized!', { status: 401 });
     }
 
     const model = models.find((model) => model.id === modelId);
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
 
     if (!chat) {
         const title = await generateTitleFromUserMessage({ message: userMessage, model: DEFAULT_TITLE_MODEL_ID });
-        await saveChat({ id, userId: session.data.user.id, title, model: model.apiIdentifier });
+        await saveChat({ id, userId: session.user.id, title, model: model.apiIdentifier });
     }
 
     const userMessageId = generateUUID();
@@ -90,7 +92,7 @@ export async function POST(request: Request) {
                 experimental_transform: smoothStream(), 
                 maxSteps: 5,
                 onFinish: async ({ response }) => {
-                  if (session.data.user?.id) {
+                  if (session.user?.id) {
                     try {
 
                       await saveMessages({
@@ -131,7 +133,9 @@ export async function DELETE(request: Request) {
     const id = searchParams.get('id');
     const deleteAll = searchParams.get('deleteAll');
   
-    const { data: session } = await authClient.getSession()
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
   
     if (!session?.user?.id) {
       return new Response('Unauthorized', { status: 401 });

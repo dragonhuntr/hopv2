@@ -1,9 +1,9 @@
 import { auth } from '@/lib/auth';
 import { getChatsByUserId } from '@/prisma/queries';
 
-export async function GET(Request: Request) {
+export async function GET(request: Request) {
   const session = await auth.api.getSession({
-    headers: Request.headers,
+    headers: request.headers,
   });
   
   if (!session?.user?.id) {
