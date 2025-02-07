@@ -1,13 +1,15 @@
-import { authClient } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { getChatsByUserId } from '@/prisma/queries';
 
-export async function GET() {
-  const session = await authClient.getSession()
-
-  if (!session || !session.user) {
+export async function GET(Request: Request) {
+  const session = await auth.api.getSession({
+    headers: Request.headers,
+  });
+  
+  if (!session?.user?.id) {
     return Response.json('Unauthorized!', { status: 401 });
   }
 
-  const chats = await getChatsByUserId({ id: session.user.id! });
+  const chats = await getChatsByUserId({ id: session.user.id });
   return Response.json(chats);
 } 
