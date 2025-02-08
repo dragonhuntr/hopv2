@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import type { User } from 'next-auth';
 import { memo, useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import useSWR from 'swr';
@@ -49,6 +48,7 @@ import {
 import type { Chat } from '@/types/chat';
 import { fetcher } from '@/lib/utils';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { User } from '@prisma/client';
 
 type TempChat = {
   id: string;
@@ -220,7 +220,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     if (!deleteId) return;
 
     try {
-      const response = await fetch(`/api/chat/${deleteId}`, {
+      const response = await fetch(`/api/chat?id=${deleteId}`, {
         method: 'DELETE',
       });
 
@@ -231,7 +231,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
       mutate((chats) => chats?.filter((chat) => chat.id !== deleteId), false);
 
       if (id === deleteId) {
-        router.push('/');
+        router.push('/chat');
       }
 
       toast.success('Chat deleted successfully');

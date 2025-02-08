@@ -137,13 +137,12 @@ export async function DELETE(request: Request) {
       headers: request.headers,
     });
   
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return new Response('Unauthorized', { status: 401 });
     }
   
     try {
       if (deleteAll === 'true') {
-        // Wait for deletion to complete
         await deleteAllChatsByUserId({ userId: session.user.id });
         return new Response('All chats deleted', { status: 200 });
       }
@@ -158,7 +157,6 @@ export async function DELETE(request: Request) {
         return new Response('Unauthorized', { status: 401 });
       }
   
-      // Wait for deletion to complete
       await deleteChatById({ id });
       return new Response('Chat deleted', { status: 200 });
     } catch (error) {

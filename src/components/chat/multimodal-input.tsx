@@ -5,7 +5,6 @@ import React, { useRef, useEffect, useState, useCallback, type Dispatch, type Se
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 import { cn } from '@/lib/utils';
-import { generateUUID } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import { saveModelId } from '@/app/(dashboard)/actions';
 
@@ -89,13 +88,10 @@ function PureMultimodalInput({
   useEffect(() => {
     if (textareaRef.current) {
       const domValue = textareaRef.current.value;
-      // Prefer DOM value over localStorage to handle hydration
       const finalValue = domValue || localStorageInput || '';
       setInput(finalValue);
       adjustHeight();
     }
-    // Only run once after hydration
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

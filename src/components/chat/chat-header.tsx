@@ -3,15 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
 import dynamic from 'next/dynamic';
-import { memo, useMemo, useState, useEffect } from 'react';
-import { useSWRConfig } from 'swr';
+import { memo, useState, useEffect } from 'react';
 
 import { SidebarToggle } from '@/components/sidebar/sidebar-toggle';
 import { NewChat } from '@/components/chat/new-chat';
 import { Button } from '@/components/ui/button';
-import { PlusIcon } from '@/components/ui/icons';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { VisibilityType } from '@/components/chat/visibility-selector';
 
 const DynamicModelSelector = dynamic(() => import('@/components/chat/model-selector').then(mod => mod.ModelSelector), {

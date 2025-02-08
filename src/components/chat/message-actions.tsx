@@ -1,6 +1,5 @@
 import type { Message } from 'ai';
 import { toast } from 'sonner';
-import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 
 import { CopyIcon } from '@/components/ui/icons';
@@ -14,7 +13,6 @@ import {
 import { memo } from 'react';
 
 export function PureMessageActions({
-  chatId,
   message,
   isLoading,
 }: {
