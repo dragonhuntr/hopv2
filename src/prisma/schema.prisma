@@ -17,6 +17,12 @@ enum DocumentKind {
   code
 }
 
+enum AttachmentStatus {
+  pending    // Just uploaded, not associated with a message
+  active     // Associated with a sent message
+  deleted    // Marked for deletion
+}
+
 model Account {
   id                    String    @id
   userId                String
@@ -50,8 +56,8 @@ model User {
   updatedAt     DateTime
   accounts      Account[]
   sessions      Session[]
-  // You can keep your custom relations
-  Chat          Chat[]
+  chats         Chat[]
+  attachments   Attachment[]
 
   @@map("user")
 }
@@ -82,16 +88,20 @@ model Message {
 }
 
 model Attachment {
-  id          String   @id @default(uuid())
+  id          String           @id @default(uuid())
   name        String
   url         String
-  contentType String // Stores MIME type (e.g. "image/jpeg", "application/pdf")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  messageId   String
+  contentType String           // Stores MIME type (e.g. "image/jpeg", "application/pdf")
+  status      AttachmentStatus @default(pending)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  message     Message?         @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId   String?
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
 
   @@index([messageId])
+  @@index([userId])
 }
 
 model Session {

@@ -1,7 +1,8 @@
-import { PrismaClient, type User } from '@prisma/client';
-import { genSaltSync, hashSync } from 'bcrypt-ts';
+import { type User } from '@prisma/client';
+import { prisma } from '@/lib/utils';
+import { AttachmentService } from '@/lib/attachments/attachment-service';
 
-export const prisma = new PrismaClient();
+const attachmentService = new AttachmentService();
 
 export async function getUser(email: string): Promise<User | null> {
 
@@ -10,15 +11,6 @@ export async function getUser(email: string): Promise<User | null> {
   });
 
   return data
-}
-
-export async function createUser(email: string, password: string) {
-  const salt = genSaltSync(10);
-  const hash = hashSync(password, salt);
-
-  return await prisma.user.create({
-      data: { email, password: hash }
-    });
 }
 
 export async function saveChat({
@@ -95,6 +87,7 @@ export async function saveMessages({ messages }: { messages: Array<{
   content: string;
   createdAt: Date;
   attachments?: Array<{
+    id: string;  // Attachment ID is required
     url: string;
     name: string;
     contentType: string;
@@ -106,15 +99,24 @@ export async function saveMessages({ messages }: { messages: Array<{
       data: messages.map(({ attachments, ...message }) => message)
     });
 
-    // Then create attachments for messages that have them
+    // Then activate any attachments for messages that have them
     for (const message of messages) {
       if (message.attachments?.length) {
-        await prisma.attachment.createMany({
-          data: message.attachments.map(attachment => ({
-            ...attachment,
-            messageId: message.id
-          }))
+        // Get the chat to get the userId
+        const chat = await prisma.chat.findUnique({
+          where: { id: message.chatId },
+          select: { userId: true }
         });
+
+        if (!chat) {
+          throw new Error('Chat not found');
+        }
+
+        await attachmentService.activateAttachments(
+          message.attachments.map(a => a.id),
+          message.id,
+          chat.userId
+        );
       }
     }
   } catch (error) {

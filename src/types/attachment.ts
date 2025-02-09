@@ -1,28 +1,38 @@
+// Define allowed extensions
 export type Extension = '.jpg' | '.jpeg' | '.png' | '.gif' | '.webp' | '.pdf' | '.txt' | '.md' | '.js' | '.jsx' | '.ts' | '.tsx' | '.py' | '.json' | '.csv';
 
-export const ALLOWED_CONTENT_TYPES: Record<string, Extension[]> = {
-  // Images
+export type AttachmentStatus = 'pending' | 'active' | 'deleted';
+
+// Define content types directly
+export type ContentType = 
+  | 'image/jpeg' 
+  | 'image/png'
+  | 'image/gif'
+  | 'image/webp'
+  | 'application/pdf'
+  | 'text/plain'
+  | 'text/markdown'
+  | 'text/javascript'
+  | 'text/typescript'
+  | 'text/python'
+  | 'application/json'
+  | 'text/csv';
+
+// Simple mapping for validation
+export const EXTENSION_MAP: Record<ContentType, Extension[]> = {
   'image/jpeg': ['.jpg', '.jpeg'],
   'image/png': ['.png'],
   'image/gif': ['.gif'],
   'image/webp': ['.webp'],
-  
-  // Documents
   'application/pdf': ['.pdf'],
   'text/plain': ['.txt'],
   'text/markdown': ['.md'],
-  
-  // Code
   'text/javascript': ['.js', '.jsx'],
   'text/typescript': ['.ts', '.tsx'],
   'text/python': ['.py'],
-  
-  // Data
   'application/json': ['.json'],
-  'text/csv': ['.csv'],
+  'text/csv': ['.csv']
 } as const;
-
-export type AllowedContentType = keyof typeof ALLOWED_CONTENT_TYPES;
 
 export interface AttachmentMetadata {
   name: string;
@@ -34,7 +44,14 @@ export interface ValidationResult {
   isValid: boolean;
   error?: string;
   sanitizedName?: string;
-  contentType?: AllowedContentType;
+  contentType?: ContentType;
+}
+
+export interface Attachment {
+  id: string;
+  url: string;
+  name: string;
+  contentType: string;
 }
 
 // Maximum file size (10MB)

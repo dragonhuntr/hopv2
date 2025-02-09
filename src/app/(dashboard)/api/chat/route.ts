@@ -71,19 +71,17 @@ export async function POST(request: Request) {
                 ...userMessage, 
                 id: userMessageId, 
                 createdAt: new Date(), 
-                chatId: id, 
+                chatId: id,
                 content: userMessage.content as string,
-                attachments: lastMessage?.attachments 
+                attachments: lastMessage?.experimental_attachments?.map((attachment) => ({
+                    ...attachment,
+                }))
             },
         ],
     });
 
     return createDataStreamResponse({
         execute: async (dataStream) => {
-            dataStream.writeData({
-                type: 'user-message-id',
-                content: userMessageId,
-            });
 
             const result = streamText({
                 model: customModel(model.apiIdentifier),
@@ -99,12 +97,6 @@ export async function POST(request: Request) {
                         messages: response.messages.map(
                           (message) => {
                             const messageId = generateUUID();
-
-                            if (message.role === 'assistant') {
-                              dataStream.writeMessageAnnotation({
-                                messageIdFromServer: messageId,
-                              });
-                            }
 
                             return {
                               id: messageId,
@@ -137,7 +129,7 @@ export async function DELETE(request: Request) {
       headers: request.headers,
     });
   
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new Response('Unauthorized', { status: 401 });
     }
   

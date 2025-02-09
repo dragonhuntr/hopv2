@@ -1,6 +1,7 @@
 'use client';
 
-import type { ChatRequestOptions, Attachment, CreateMessage, Message } from 'ai';
+import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
+import type { Attachment } from '@/types/attachment';
 import React, { useRef, useEffect, useState, useCallback, type Dispatch, type SetStateAction, memo } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
@@ -11,7 +12,7 @@ import { saveModelId } from '@/app/(dashboard)/actions';
 import { ArrowUpIcon, StopIcon, PaperclipIcon } from '@/components/ui/icons';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/text-area';
-import { PreviewAttachment } from './preview-attachment';
+import { PreviewAttachment } from '@/components/chat/preview-attachment';
 
 interface MultimodalInputProps {
   chatId: string;
@@ -46,9 +47,7 @@ function PureMultimodalInput({
   stop,
   attachments,
   setAttachments,
-  messages,
   setMessages,
-  append,
   handleSubmit,
   className,
   modelId,
@@ -148,9 +147,10 @@ function PureMultimodalInput({
 
       if (response.ok) {
         const data = await response.json();
-        const { url, name, contentType } = data;
+        const { id, url, name, contentType } = data;
 
         return {
+          id,
           url,
           name,
           contentType,
