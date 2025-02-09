@@ -10,7 +10,7 @@ interface MarkdownProps {
 export function Markdown({ children, className }: MarkdownProps) {
   return (
     <div className={cn(
-      'prose-neutral dark:prose-invert max-w-none break-words',
+      'prose prose-neutral dark:prose-invert max-w-none break-words',
       '[&_pre]:bg-muted [&_pre]:rounded-md [&_pre]:border [&_pre]:border-border',
       '[&_code]:px-1.5 [&_code]:rounded-md [&_code]:bg-muted [&_code]:font-mono [&_code]:text-sm',
       '[&_a]:text-primary [&_a]:no-underline hover:[&_a]:underline',

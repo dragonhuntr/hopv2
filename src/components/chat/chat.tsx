@@ -123,7 +123,7 @@ export function Chat({
   };
 
   return (
-    <div className="flex flex-col min-w-0 h-dvh bg-background md:w-[calc(100%-16rem)] md:max-w-[calc(100%-16rem)] lg:max-w-[calc(100%-16rem)] xl:max-w-[calc(100%-16rem)]">
+    <div className="flex flex-col min-w-0 h-dvh bg-background md:w-[calc(100%)] md:max-w-[calc(100%)] lg:max-w-[calc(100%)] xl:max-w-[calc(100%)]">
       <ChatHeader {...headerProps} />
       <ChatErrorBoundary>
         <div className="flex-1 overflow-y-auto min-w-0">
