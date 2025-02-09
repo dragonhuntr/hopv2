@@ -230,14 +230,14 @@ function PureMultimodalInput({
       )}
 
       {isVisionModel && (attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll items-end">
+        <div className="flex flex-row gap-2 items-end">
           {attachments.map((attachment) => (
             <PreviewAttachment 
               key={attachment.url} 
               attachment={attachment} 
               onDelete={async (attachment) => {
                 try {
-                  const response = await fetch(`/api/files/upload?pathname=${attachment.name}`, {
+                  const response = await fetch(`/api/files/upload?id=${attachment.id}`, {
                     method: 'DELETE',
                   });
                   

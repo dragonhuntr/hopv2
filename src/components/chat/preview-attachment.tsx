@@ -38,9 +38,10 @@ function PurePreviewAttachment({ attachment, isUploading, onDelete }: PreviewAtt
           <>
             <Image
               src={url}
-              alt={name ?? 'Image attachment'}
+              alt={`Attachment: ${name || 'Untitled image'}`}
               fill
               className="rounded-md object-cover"
+              sizes="80px"
             />
             {isHovered && !isUploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-md transition-opacity">
@@ -50,6 +51,7 @@ function PurePreviewAttachment({ attachment, isUploading, onDelete }: PreviewAtt
                   className="h-8 w-8 text-white hover:text-destructive hover:bg-white"
                   onClick={handleDelete}
                   disabled={isDeleting}
+                  aria-label="Remove attachment"
                 >
                   {isDeleting ? (
                     <div className="animate-spin">
@@ -63,7 +65,7 @@ function PurePreviewAttachment({ attachment, isUploading, onDelete }: PreviewAtt
             )}
           </>
         ) : (
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground text-center px-1">
             {contentType?.split('/')[1]?.toUpperCase() ?? 'FILE'}
           </div>
         )}
